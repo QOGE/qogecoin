@@ -1607,6 +1607,20 @@ if test "$use_zmq" = "yes"; then
   esac
 fi
 
+dnl liboqs check (SIP-QOGE-PQC-02 Phase B — required for P2QPK / VerifyWitnessProgram)
+dnl
+dnl Option B (dev/Phase D-E only): detect the system-installed liboqs via pkg-config.
+dnl liboqs must be built from source with OQS_DIST_BUILD=ON and installed to /usr/local
+dnl before running ./configure (see symbiont-wallet README §2).
+dnl
+dnl Option A — depends/packages/liboqs.mk, CMake via $(package)_cmake, following the
+dnl native_libmultiprocess.mk template — is required before any cross-compiled build
+dnl (Phase F+). Currently using Option B (host pkg-config) for dev/Phase D-E only.
+
+PKG_CHECK_MODULES([LIBOQS], [liboqs],
+  [AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
+  [AC_MSG_ERROR([liboqs not found. Build and install liboqs from source with OQS_DIST_BUILD=ON (see symbiont-wallet README §2), then re-run ./configure.])])
+
 dnl libmultiprocess library check
 
 libmultiprocess_found=no
@@ -1937,6 +1951,8 @@ AC_SUBST(MINIUPNPC_CPPFLAGS)
 AC_SUBST(MINIUPNPC_LIBS)
 AC_SUBST(NATPMP_CPPFLAGS)
 AC_SUBST(NATPMP_LIBS)
+AC_SUBST(LIBOQS_CFLAGS)
+AC_SUBST(LIBOQS_LIBS)
 AC_SUBST(HAVE_GMTIME_R)
 AC_SUBST(HAVE_FDATASYNC)
 AC_SUBST(HAVE_FULLFSYNC)

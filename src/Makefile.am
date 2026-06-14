@@ -549,7 +549,7 @@ crypto_libqogecoin_crypto_arm_shani_la_CPPFLAGS += -DENABLE_ARM_SHANI
 crypto_libqogecoin_crypto_arm_shani_la_SOURCES = crypto/sha256_arm_shani.cpp
 
 # consensus: shared between all executables that validate any consensus rules.
-libqogecoin_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(QOGECOIN_INCLUDES)
+libqogecoin_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(QOGECOIN_INCLUDES) $(LIBOQS_CFLAGS)
 libqogecoin_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libqogecoin_consensus_a_SOURCES = \
   arith_uint256.cpp \
@@ -718,7 +718,7 @@ qogecoin_bin_ldadd = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-qogecoin_bin_ldadd += $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS)
+qogecoin_bin_ldadd += $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(LIBOQS_LIBS)
 
 qogecoind_SOURCES = $(qogecoin_daemon_sources) init/qogecoind.cpp
 qogecoind_CPPFLAGS = $(qogecoin_bin_cppflags)
