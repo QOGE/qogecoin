@@ -158,6 +158,9 @@ struct PrecomputedTransactionData
     uint256 m_spent_amounts_single_hash;
     uint256 m_spent_scripts_single_hash;
     //! Whether the 5 fields above are initialized.
+    //! Set when Init() detects a Taproot (witver==1/OP_1) or P2QPK (witver==2/OP_2) input.
+    //! P2QPK spending via SignatureHashP2QPK requires this flag in addition to
+    //! m_spent_outputs_ready; see SIP-QOGE-PQC-02a §2 and the Init() OP_1||OP_2 trigger.
     bool m_bip341_taproot_ready = false;
 
     // BIP143 precomputed data (double-SHA256).

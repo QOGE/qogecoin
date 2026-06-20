@@ -89,6 +89,57 @@ BOOST_AUTO_TEST_CASE(p2qpksighash_test_vector)
         "8a17f83ed68457d5469f4bbcfc68ddaeaa70739522c1b6fb76685ba7b2008c38");
 }
 
+// Safeguard D (SIP-QOGE-PQC-02a §7-D): verify that Init() without force=true detects a
+// witver==2 (OP_2) spent scriptPubKey and sets m_bip341_taproot_ready, populating
+// m_spent_amounts_single_hash and m_spent_scripts_single_hash through the normal code path.
+// This tests the OP_1||OP_2 trigger in Init() itself — the thing that ensures precomputed
+// data is available when SignatureHashP2QPK is later called from VerifyWitnessProgram.
+BOOST_AUTO_TEST_CASE(init_op2_trigger_sets_taproot_ready_flag)
+{
+    // Build a minimal transaction with one witness-bearing input (witness must be non-null
+    // for Init() to enter the scriptPubKey detection branch).
+    CMutableTransaction tx;
+    tx.nVersion = 2;
+    tx.nLockTime = 0;
+    tx.vin.resize(1);
+    tx.vin[0].prevout.hash = uint256::ONE;
+    tx.vin[0].prevout.n = 0;
+    tx.vin[0].nSequence = 0xffffffff;
+    // Non-empty witness stack — any byte will do; Init() only checks IsNull().
+    tx.vin[0].scriptWitness.stack.push_back({0x00});
+    tx.vout.resize(1);
+    tx.vout[0].nValue = 1000;
+    tx.vout[0].scriptPubKey = CScript() << OP_0 << std::vector<unsigned char>(20, 0x00);
+
+    // Construct a P2QPK scriptPubKey: OP_2 <32-byte program>.
+    // This is the witness-v2 output being spent by the input above.
+    std::vector<unsigned char> program(32, 0xab); // arbitrary 32-byte witness program
+    CScript p2qpk_script = CScript() << OP_2 << program;
+    BOOST_REQUIRE_EQUAL(p2qpk_script.size(), 34U); // sanity: OP_2 + pushdata(32)
+
+    std::vector<CTxOut> spent_outputs;
+    spent_outputs.emplace_back(CAmount{50000}, p2qpk_script);
+
+    // Init() without force=true — must detect OP_2 and set m_bip341_taproot_ready.
+    PrecomputedTransactionData txdata;
+    txdata.Init(tx, std::vector<CTxOut>{spent_outputs});
+
+    // The OP_2 trigger is the whole point of this test.
+    BOOST_CHECK(txdata.m_bip341_taproot_ready);
+    BOOST_CHECK(txdata.m_spent_outputs_ready);
+
+    // Both spent-amount and spent-script hashes must be populated (not default-zero),
+    // since SignatureHashP2QPK reads them unconditionally. A zero hash here would mean
+    // the trigger fired but the computation was skipped — that would be a consensus bug.
+    BOOST_CHECK(txdata.m_spent_amounts_single_hash != uint256());
+    BOOST_CHECK(txdata.m_spent_scripts_single_hash != uint256());
+
+    // m_bip143_segwit_ready must NOT be set: a pure P2QPK spend should not trigger
+    // the BIP143 path (that would be a false-positive that wastes work, or worse,
+    // could indicate the else-branch is still firing for OP_2 inputs).
+    BOOST_CHECK(!txdata.m_bip143_segwit_ready);
+}
+
 // Verify that the missing-data guard returns false (not crash) when precomputed data absent.
 BOOST_AUTO_TEST_CASE(p2qpksighash_missing_data_returns_false)
 {
