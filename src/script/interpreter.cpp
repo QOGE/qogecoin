@@ -1411,11 +1411,12 @@ void PrecomputedTransactionData::Init(const T& txTo, std::vector<CTxOut>&& spent
     for (size_t inpos = 0; inpos < txTo.vin.size() && !(uses_bip143_segwit && uses_bip341_taproot); ++inpos) {
         if (!txTo.vin[inpos].scriptWitness.IsNull()) {
             if (m_spent_outputs_ready && m_spent_outputs[inpos].scriptPubKey.size() == 2 + WITNESS_V1_TAPROOT_SIZE &&
-                m_spent_outputs[inpos].scriptPubKey[0] == OP_1) {
-                // Treat every witness-bearing spend with 34-byte scriptPubKey that starts with OP_1 as a Taproot
-                // spend. This only works if spent_outputs was provided as well, but if it wasn't, actual validation
-                // will fail anyway. Note that this branch may trigger for scriptPubKeys that aren't actually segwit
-                // but in that case validation will fail as SCRIPT_ERR_WITNESS_UNEXPECTED anyway.
+                (m_spent_outputs[inpos].scriptPubKey[0] == OP_1 ||
+                 m_spent_outputs[inpos].scriptPubKey[0] == OP_2)) {
+                // Treat every witness-bearing spend with 34-byte scriptPubKey starting with OP_1 (Taproot) or
+                // OP_2 (P2QPK, SIP-QOGE-PQC-02) as needing the spent-amounts/scripts precomputed fields.
+                // This branch may trigger for non-segwit scriptPubKeys that happen to match; validation will
+                // reject them as SCRIPT_ERR_WITNESS_UNEXPECTED in that case — harmless false positive.
                 uses_bip341_taproot = true;
             } else {
                 // Treat every spend that's not known to native witness v1 as a Witness v0 spend. This branch may
@@ -1461,6 +1462,7 @@ template PrecomputedTransactionData::PrecomputedTransactionData(const CMutableTr
 const CHashWriter HASHER_TAPSIGHASH = TaggedHash("TapSighash");
 const CHashWriter HASHER_TAPLEAF = TaggedHash("TapLeaf");
 const CHashWriter HASHER_TAPBRANCH = TaggedHash("TapBranch");
+const CHashWriter HASHER_P2QPKSIGHASH = TaggedHash("P2QPKSighash");
 
 static bool HandleMissingData(MissingDataBehavior mdb)
 {
@@ -1563,6 +1565,49 @@ bool SignatureHashSchnorr(uint256& hash_out, ScriptExecutionData& execdata, cons
     hash_out = ss.GetSHA256();
     return true;
 }
+
+template<typename T>
+bool SignatureHashP2QPK(uint256& hash_out, const T& tx_to, uint32_t in_pos,
+                        const PrecomputedTransactionData& cache, MissingDataBehavior mdb)
+{
+    assert(in_pos < tx_to.vin.size());
+    // Precondition: caller (VerifyWitnessProgram) must have verified pubkey.size() == SLHDSA_PK_LEN
+    // and sig.size() == SLHDSA_SIG_LEN before invoking this function (SIP-QOGE-PQC-02a §7-A).
+    if (!(cache.m_bip341_taproot_ready && cache.m_spent_outputs_ready)) {
+        return HandleMissingData(mdb);
+    }
+
+    CHashWriter ss = HASHER_P2QPKSIGHASH;
+
+    // Epoch — SIP-QOGE-PQC-02a §3
+    static constexpr uint8_t EPOCH = 0;
+    ss << EPOCH;
+
+    // hash_type: SIGHASH_ALL (0x01) — fixed for v1; no branching (§5: ANYONECANPAY/NONE/SINGLE out of scope)
+    static constexpr uint8_t HASH_TYPE = SIGHASH_ALL;
+    ss << HASH_TYPE;
+
+    // Transaction-level fields
+    ss << tx_to.nVersion;
+    ss << tx_to.nLockTime;
+
+    // All-input/all-output commitment hashes — unconditional, no per-hash-type branches
+    ss << cache.m_prevouts_single_hash;
+    ss << cache.m_spent_amounts_single_hash;
+    ss << cache.m_spent_scripts_single_hash;
+    ss << cache.m_sequences_single_hash;
+    ss << cache.m_outputs_single_hash;
+
+    // Input index (LE32)
+    ss << in_pos;
+
+    hash_out = ss.GetSHA256();
+    return true;
+}
+
+// explicit instantiation
+template bool SignatureHashP2QPK(uint256&, const CTransaction&, uint32_t, const PrecomputedTransactionData&, MissingDataBehavior);
+template bool SignatureHashP2QPK(uint256&, const CMutableTransaction&, uint32_t, const PrecomputedTransactionData&, MissingDataBehavior);
 
 template <class T>
 uint256 SignatureHash(const CScript& scriptCode, const T& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache)

@@ -122,6 +122,7 @@ QOGECOIN_TESTS =\
   test/rpc_tests.cpp \
   test/sanity_tests.cpp \
   test/scheduler_tests.cpp \
+  test/script_p2qpk_tests.cpp \
   test/script_p2sh_tests.cpp \
   test/script_parse_tests.cpp \
   test/script_segwit_tests.cpp \

@@ -187,10 +187,11 @@ struct PrecomputedTransactionData
 
 enum class SigVersion
 {
-    BASE = 0,        //!< Bare scripts and BIP16 P2SH-wrapped redeemscripts
-    WITNESS_V0 = 1,  //!< Witness v0 (P2WPKH and P2WSH); see BIP 141
-    TAPROOT = 2,     //!< Witness v1 with 32-byte program, not BIP16 P2SH-wrapped, key path spending; see BIP 341
-    TAPSCRIPT = 3,   //!< Witness v1 with 32-byte program, not BIP16 P2SH-wrapped, script path spending, leaf version 0xc0; see BIP 342
+    BASE = 0,           //!< Bare scripts and BIP16 P2SH-wrapped redeemscripts
+    WITNESS_V0 = 1,     //!< Witness v0 (P2WPKH and P2WSH); see BIP 141
+    TAPROOT = 2,        //!< Witness v1 with 32-byte program, not BIP16 P2SH-wrapped, key path spending; see BIP 341
+    TAPSCRIPT = 3,      //!< Witness v1 with 32-byte program, not BIP16 P2SH-wrapped, script path spending, leaf version 0xc0; see BIP 342
+    WITNESS_V2_SLHDSA = 4, //!< Witness v2 with 32-byte program (P2QPK); see SIP-QOGE-PQC-02
 };
 
 struct ScriptExecutionData
@@ -233,9 +234,15 @@ static constexpr size_t TAPROOT_CONTROL_NODE_SIZE = 32;
 static constexpr size_t TAPROOT_CONTROL_MAX_NODE_COUNT = 128;
 static constexpr size_t TAPROOT_CONTROL_MAX_SIZE = TAPROOT_CONTROL_BASE_SIZE + TAPROOT_CONTROL_NODE_SIZE * TAPROOT_CONTROL_MAX_NODE_COUNT;
 
-extern const CHashWriter HASHER_TAPSIGHASH; //!< Hasher with tag "TapSighash" pre-fed to it.
-extern const CHashWriter HASHER_TAPLEAF;    //!< Hasher with tag "TapLeaf" pre-fed to it.
-extern const CHashWriter HASHER_TAPBRANCH;  //!< Hasher with tag "TapBranch" pre-fed to it.
+// SLH-DSA-SHA2-128f (FIPS 205) size constants — SIP-QOGE-PQC-02a §7-A preconditions.
+// VerifyWitnessProgram MUST enforce exact equality before calling SignatureHashP2QPK or liboqs.
+static constexpr size_t SLHDSA_PK_LEN  = 32;    //!< SLH-DSA-SHA2-128f public key length in bytes (exact)
+static constexpr size_t SLHDSA_SIG_LEN = 17088;  //!< SLH-DSA-SHA2-128f signature length in bytes (exact, not ≤ max)
+
+extern const CHashWriter HASHER_TAPSIGHASH;   //!< Hasher with tag "TapSighash" pre-fed to it.
+extern const CHashWriter HASHER_TAPLEAF;      //!< Hasher with tag "TapLeaf" pre-fed to it.
+extern const CHashWriter HASHER_TAPBRANCH;    //!< Hasher with tag "TapBranch" pre-fed to it.
+extern const CHashWriter HASHER_P2QPKSIGHASH; //!< Hasher with tag "P2QPKSighash" pre-fed to it; SIP-QOGE-PQC-02a §3.
 
 template <class T>
 uint256 SignatureHash(const CScript& scriptCode, const T& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache = nullptr);
@@ -277,6 +284,22 @@ enum class MissingDataBehavior
 
 template<typename T>
 bool SignatureHashSchnorr(uint256& hash_out, ScriptExecutionData& execdata, const T& tx_to, uint32_t in_pos, uint8_t hash_type, SigVersion sigversion, const PrecomputedTransactionData& cache, MissingDataBehavior mdb);
+
+/** Compute the P2QPK sighash (SIP-QOGE-PQC-02a §3, SigVersion::WITNESS_V2_SLHDSA).
+ *
+ * Preconditions (§7-A): caller must have verified pubkey.size() == SLHDSA_PK_LEN and
+ * sig.size() == SLHDSA_SIG_LEN before calling this function.
+ *
+ * @param[out] hash_out   The computed P2QPKSighash.
+ * @param[in]  tx_to      The transaction being signed.
+ * @param[in]  in_pos     Index of the input being signed.
+ * @param[in]  cache      Precomputed transaction data; must have m_bip341_taproot_ready set.
+ * @param[in]  mdb        Behaviour when precomputed data is missing.
+ * @return false iff precomputed data is missing and mdb == FAIL; true on success.
+ */
+template<typename T>
+bool SignatureHashP2QPK(uint256& hash_out, const T& tx_to, uint32_t in_pos,
+                        const PrecomputedTransactionData& cache, MissingDataBehavior mdb);
 
 template <class T>
 class GenericTransactionSignatureChecker : public BaseSignatureChecker
