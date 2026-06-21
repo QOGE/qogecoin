@@ -399,6 +399,9 @@ static bool EvalChecksig(const valtype& sig, const valtype& pubkey, CScript::con
     case SigVersion::TAPROOT:
         // Key path spending in Taproot has no script, so this is unreachable.
         break;
+    case SigVersion::WITNESS_V2_SLHDSA:
+        // P2QPK has no script either; OP_CHECKSIG is never executed in this sigversion.
+        break;
     }
     assert(false);
 }
@@ -1743,6 +1746,26 @@ bool GenericTransactionSignatureChecker<T>::CheckSchnorrSignature(Span<const uns
 }
 
 template <class T>
+bool GenericTransactionSignatureChecker<T>::CheckSLHDSASignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, ScriptError* serror) const
+{
+    // Preconditions: caller (VerifyWitnessProgram witver==2 branch) has already verified
+    //   pubkey.size() == SLHDSA_PK_LEN, sig.size() == SLHDSA_SIG_LEN (§7-A), and
+    //   HASH256(pubkey) == program (commitment check). These are not re-checked here.
+    if (!this->txdata) return HandleMissingData(m_mdb);
+    uint256 sighash;
+    if (!SignatureHashP2QPK(sighash, *txTo, nIn, *txdata, m_mdb)) {
+        return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+    }
+    // TODO(phase-D-step-4): replace this stub with OQS_SIG_slh_dsa_pure_sha2_128f_verify.
+    // Per SIP-QOGE-PQC-02a §7-B: pure SLH-DSA mode, empty context, 32-byte sighash message.
+    // Until this is wired, SCRIPT_VERIFY_P2QPK MUST NOT be set in consensus/policy flags.
+    (void)sig;
+    (void)pubkey;
+    (void)sighash;
+    return true;
+}
+
+template <class T>
 bool GenericTransactionSignatureChecker<T>::CheckLockTime(const CScriptNum& nLockTime) const
 {
     // There are two kinds of nLockTime: lock-by-blockheight
@@ -1979,6 +2002,25 @@ static bool VerifyWitnessProgram(const CScriptWitness& witness, int witversion, 
             }
             return set_success(serror);
         }
+    } else if (witversion == 2 && program.size() == SLHDSA_PK_LEN && !is_p2sh) {
+        // SIP-QOGE-PQC-02 P2QPK: 32-byte non-P2SH witness v2 program (= HASH256(SLH-DSA pubkey)).
+        // Pre-activation: fall through to anyone-can-spend. Post-activation: full SLH-DSA check.
+        if (!(flags & SCRIPT_VERIFY_P2QPK)) return set_success(serror);
+        if (stack.size() != 2) return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+        const valtype& pubkey = SpanPopBack(stack); // top of stack: 32-byte SLH-DSA pubkey
+        const valtype& sig    = SpanPopBack(stack); // below: 17,088-byte SLH-DSA signature
+        // §7-A: exact length — NOT ">= max"; SLH-DSA has no variable-size fields
+        if (pubkey.size() != SLHDSA_PK_LEN)  return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+        if (sig.size()    != SLHDSA_SIG_LEN) return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+        // Commitment check: program must equal HASH256(pubkey)
+        uint256 commitment;
+        CHash256().Write(pubkey).Finalize(commitment);
+        if (memcmp(commitment.begin(), program.data(), SLHDSA_PK_LEN) != 0) {
+            return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+        }
+        // Sighash + SLH-DSA verify (liboqs stub — see CheckSLHDSASignature TODO)
+        if (!checker.CheckSLHDSASignature(sig, pubkey, serror)) return false;
+        return set_success(serror);
     } else {
         if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM) {
             return set_error(serror, SCRIPT_ERR_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM);

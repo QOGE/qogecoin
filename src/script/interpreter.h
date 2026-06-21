@@ -141,6 +141,12 @@ enum : uint32_t {
     // Making unknown public key versions (in BIP 342 scripts) non-standard
     SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_PUBKEYTYPE = (1U << 20),
 
+    // P2QPK (Pay to Quantum Public Key) consensus enforcement (SIP-QOGE-PQC-02).
+    // Pre-activation: P2QPK witness v2 outputs are anyone-can-spend. After activation
+    // (BIP9-style deployment, see SIP-QOGE-PQC-02 §3.4), this flag gates SLH-DSA verification.
+    // NOT SET in consensus until liboqs stub in CheckSLHDSASignature is replaced (Phase D step 4).
+    SCRIPT_VERIFY_P2QPK = (1U << 21),
+
     // Constants to point to the highest flag in use. Add new flags above this line.
     //
     SCRIPT_VERIFY_END_MARKER
@@ -263,6 +269,14 @@ public:
         return false;
     }
 
+    // P2QPK SLH-DSA signature check (SIP-QOGE-PQC-02a). Commitment and length checks are
+    // performed by VerifyWitnessProgram before this is called. This method computes the
+    // P2QPKSighash and invokes the SLH-DSA verifier (liboqs — stubbed until Phase D step 4).
+    virtual bool CheckSLHDSASignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, ScriptError* serror = nullptr) const
+    {
+        return false;
+    }
+
     virtual bool CheckLockTime(const CScriptNum& nLockTime) const
     {
          return false;
@@ -323,6 +337,7 @@ public:
     GenericTransactionSignatureChecker(const T* txToIn, unsigned int nInIn, const CAmount& amountIn, const PrecomputedTransactionData& txdataIn, MissingDataBehavior mdb) : txTo(txToIn), m_mdb(mdb), nIn(nInIn), amount(amountIn), txdata(&txdataIn) {}
     bool CheckECDSASignature(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const override;
     bool CheckSchnorrSignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, SigVersion sigversion, ScriptExecutionData& execdata, ScriptError* serror = nullptr) const override;
+    bool CheckSLHDSASignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, ScriptError* serror = nullptr) const override;
     bool CheckLockTime(const CScriptNum& nLockTime) const override;
     bool CheckSequence(const CScriptNum& nSequence) const override;
 };
@@ -346,6 +361,11 @@ public:
     bool CheckSchnorrSignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, SigVersion sigversion, ScriptExecutionData& execdata, ScriptError* serror = nullptr) const override
     {
         return m_checker.CheckSchnorrSignature(sig, pubkey, sigversion, execdata, serror);
+    }
+
+    bool CheckSLHDSASignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, ScriptError* serror = nullptr) const override
+    {
+        return m_checker.CheckSLHDSASignature(sig, pubkey, serror);
     }
 
     bool CheckLockTime(const CScriptNum& nLockTime) const override

@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 //
-// Unit tests for SIP-QOGE-PQC-02a SignatureHashP2QPK.
-// Phase D, step 1: sighash function in isolation (no VerifyWitnessProgram, no liboqs call).
+// Unit tests for SIP-QOGE-PQC-02a P2QPK: SignatureHashP2QPK, Init() trigger,
+// and VerifyWitnessProgram witver==2 branch (Phase D steps 1–3).
 
 #include <script/interpreter.h>
+#include <hash.h>
 #include <primitives/transaction.h>
 #include <script/script.h>
 #include <streams.h>
@@ -151,6 +152,60 @@ BOOST_AUTO_TEST_CASE(p2qpksighash_missing_data_returns_false)
 
     uint256 sighash;
     BOOST_CHECK(!SignatureHashP2QPK(sighash, tx, 0, txdata, MissingDataBehavior::FAIL));
+}
+
+// Safeguard D (SIP-QOGE-PQC-02a §7-D) — VerifyWitnessProgram branch:
+// When SCRIPT_VERIFY_P2QPK is set but no PrecomputedTransactionData has been supplied to the
+// checker (txdata == nullptr), CheckSLHDSASignature must fail closed via HandleMissingData.
+// This is distinct from the precompute-trigger tests above: those proved Init() populates the
+// right fields; this proves VerifyWitnessProgram rejects rather than passing on absent data.
+BOOST_AUTO_TEST_CASE(p2qpk_verify_missing_txdata_fails_closed)
+{
+    // Build a minimal spending transaction.
+    CMutableTransaction tx;
+    tx.nVersion = 2;
+    tx.nLockTime = 0;
+    tx.vin.resize(1);
+    tx.vin[0].prevout.hash = uint256::ONE;
+    tx.vin[0].prevout.n = 0;
+    tx.vin[0].nSequence = 0xffffffff;
+    tx.vout.resize(1);
+    tx.vout[0].nValue = 49000;
+    tx.vout[0].scriptPubKey = CScript() << OP_0 << std::vector<unsigned char>(20, 0x00);
+
+    // Build a valid P2QPK scriptPubKey: OP_2 <HASH256(pubkey)>.
+    // The commitment must be valid so we reach CheckSLHDSASignature, not fail earlier.
+    std::vector<unsigned char> pubkey(SLHDSA_PK_LEN, 0xcd); // arbitrary 32-byte stand-in
+    uint256 commitment;
+    CHash256().Write(pubkey).Finalize(commitment);
+    CScript p2qpk_spk;
+    p2qpk_spk << OP_2 << std::vector<unsigned char>(commitment.begin(), commitment.end());
+
+    // Witness: [17088-byte sig (all zeros), pubkey] — lengths are exact per §7-A.
+    CScriptWitness witness;
+    witness.stack.push_back(std::vector<unsigned char>(SLHDSA_SIG_LEN, 0x00)); // sig (bottom)
+    witness.stack.push_back(pubkey);                                             // pubkey (top)
+
+    // Checker constructed WITHOUT PrecomputedTransactionData (txdata == nullptr).
+    // MissingDataBehavior::FAIL → HandleMissingData returns false rather than asserting.
+    MutableTransactionSignatureChecker checker(&tx, /*nIn=*/0, /*amount=*/50000,
+                                               MissingDataBehavior::FAIL);
+
+    ScriptError err = SCRIPT_ERR_OK;
+    bool result = VerifyScript(
+        CScript(),    // scriptSig must be empty for native segwit
+        p2qpk_spk,
+        &witness,
+        SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_P2QPK,
+        checker,
+        &err);
+
+    // Must fail — absent txdata must never be treated as a valid signature.
+    BOOST_CHECK(!result);
+    // Note: err may be SCRIPT_ERR_OK here because EvalScript() sets it on success before
+    // VerifyWitnessProgram() is called, and HandleMissingData(FAIL) returns false without
+    // resetting serror — matching the existing Taproot missing-txdata behavior. The "fail
+    // closed" guarantee is the false return value, not the specific error code.
 }
 
 BOOST_AUTO_TEST_SUITE_END()
