@@ -12,6 +12,15 @@
 #include <script/script.h>
 #include <uint256.h>
 
+// sig_slh_dsa.h has no extern "C" guard of its own — it must be included either through
+// oqs/sig.h (which wraps it) or explicitly here, to get C linkage in C++ translation units.
+extern "C" {
+#include <oqs/sig_slh_dsa.h>
+}
+#ifndef OQS_ENABLE_SIG_slh_dsa_pure_sha2_128f
+#error "SIP-QOGE-PQC-02: liboqs must be built with OQS_ENABLE_SIG_slh_dsa_pure_sha2_128f"
+#endif
+
 typedef std::vector<unsigned char> valtype;
 
 namespace {
@@ -1756,12 +1765,17 @@ bool GenericTransactionSignatureChecker<T>::CheckSLHDSASignature(Span<const unsi
     if (!SignatureHashP2QPK(sighash, *txTo, nIn, *txdata, m_mdb)) {
         return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
     }
-    // TODO(phase-D-step-4): replace this stub with OQS_SIG_slh_dsa_pure_sha2_128f_verify.
-    // Per SIP-QOGE-PQC-02a §7-B: pure SLH-DSA mode, empty context, 32-byte sighash message.
-    // Until this is wired, SCRIPT_VERIFY_P2QPK MUST NOT be set in consensus/policy flags.
-    (void)sig;
-    (void)pubkey;
-    (void)sighash;
+    // SIP-QOGE-PQC-02a §7-B: pure SLH-DSA, empty context, 32-byte sighash as message.
+    // Param order (confirmed from sig_slh_dsa.h): message, message_len, sig, sig_len, pubkey.
+    // Any OQS_ERROR return fails closed — covers both invalid signatures and internal errors.
+    OQS_STATUS rc = OQS_SIG_slh_dsa_pure_sha2_128f_verify(
+        sighash.begin(), sighash.size(),  // 32-byte P2QPK sighash
+        sig.data(),      sig.size(),      // 17,088-byte SLH-DSA signature
+        pubkey.data()                     // 32-byte SLH-DSA public key
+    );
+    if (rc != OQS_SUCCESS) {
+        return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+    }
     return true;
 }
 

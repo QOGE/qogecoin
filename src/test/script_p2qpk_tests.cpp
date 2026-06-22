@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 //
 // Unit tests for SIP-QOGE-PQC-02a P2QPK: SignatureHashP2QPK, Init() trigger,
-// and VerifyWitnessProgram witver==2 branch (Phase D steps 1–3).
+// VerifyWitnessProgram witver==2 branch, and liboqs wire-up (Phase D steps 1–4).
 
 #include <script/interpreter.h>
 #include <hash.h>
@@ -206,6 +206,62 @@ BOOST_AUTO_TEST_CASE(p2qpk_verify_missing_txdata_fails_closed)
     // VerifyWitnessProgram() is called, and HandleMissingData(FAIL) returns false without
     // resetting serror — matching the existing Taproot missing-txdata behavior. The "fail
     // closed" guarantee is the false return value, not the specific error code.
+}
+
+// Phase D step 4 — liboqs wire-up: verify that a garbage signature with correct structure
+// (valid commitment, valid txdata, correct lengths per §7-A) is rejected by the real liboqs
+// verifier.  Under the former stub CheckSLHDSASignature always returned true; after step 4
+// OQS_SIG_slh_dsa_pure_sha2_128f_verify must return OQS_ERROR for an all-zeros signature and
+// VerifyScript must return false.  This distinguishes real verification from a stub.
+BOOST_AUTO_TEST_CASE(p2qpk_bad_sig_rejected)
+{
+    CMutableTransaction tx;
+    tx.nVersion = 2;
+    tx.nLockTime = 0;
+    tx.vin.resize(1);
+    tx.vin[0].prevout.hash = uint256::ONE;
+    tx.vin[0].prevout.n = 0;
+    tx.vin[0].nSequence = 0xffffffff;
+    // Non-empty scriptWitness so Init() enters the scriptPubKey detection branch.
+    tx.vin[0].scriptWitness.stack.push_back(std::vector<unsigned char>(SLHDSA_SIG_LEN, 0x00));
+    tx.vin[0].scriptWitness.stack.push_back(std::vector<unsigned char>(SLHDSA_PK_LEN, 0xab));
+    tx.vout.resize(1);
+    tx.vout[0].nValue = 49000;
+    tx.vout[0].scriptPubKey = CScript() << OP_0 << std::vector<unsigned char>(20, 0x00);
+
+    // P2QPK scriptPubKey: OP_2 <HASH256(pubkey)> — commitment must be valid so we reach liboqs.
+    std::vector<unsigned char> pubkey(SLHDSA_PK_LEN, 0xab);
+    uint256 commitment;
+    CHash256().Write(pubkey).Finalize(commitment);
+    CScript p2qpk_spk;
+    p2qpk_spk << OP_2 << std::vector<unsigned char>(commitment.begin(), commitment.end());
+
+    // OP_2 trigger: Init() detects the P2QPK spent output and sets m_bip341_taproot_ready.
+    PrecomputedTransactionData txdata;
+    txdata.Init(tx, std::vector<CTxOut>{CTxOut{CAmount{50000}, p2qpk_spk}});
+    BOOST_REQUIRE(txdata.m_bip341_taproot_ready);
+
+    // Witness: [garbage sig (all zeros, exact §7-A length), valid-commitment pubkey].
+    // Commitment passes; liboqs must reject the zeroed signature.
+    CScriptWitness witness;
+    witness.stack.push_back(std::vector<unsigned char>(SLHDSA_SIG_LEN, 0x00)); // sig (bottom)
+    witness.stack.push_back(pubkey);                                             // pubkey (top)
+
+    MutableTransactionSignatureChecker checker(&tx, /*nIn=*/0, /*amount=*/50000,
+                                               txdata, MissingDataBehavior::FAIL);
+
+    ScriptError err = SCRIPT_ERR_OK;
+    bool result = VerifyScript(
+        CScript(),
+        p2qpk_spk,
+        &witness,
+        SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_P2QPK,
+        checker,
+        &err);
+
+    // Must fail: liboqs rejects the all-zeros garbage signature.
+    // If the stub were still present this would incorrectly return true.
+    BOOST_CHECK(!result);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
