@@ -259,6 +259,183 @@ public:
 };
 
 
+/**
+ * Signet: not yet supported in Qogecoin. This stub class exists only to satisfy
+ * AppInitParameterInteraction's unconditional help-text construction (init.cpp creates all
+ * four chain-param objects at startup to format -assumevalid / -minimumchainwork / -port
+ * help strings). Selecting signet at runtime is rejected by AppInitParameterInteraction.
+ */
+class CSigNetParams : public CChainParams {
+public:
+    explicit CSigNetParams(const ArgsManager& args) {
+        strNetworkID = CBaseChainParams::SIGNET;
+        consensus.signet_blocks = true;
+        consensus.signet_challenge.clear();
+        consensus.nSubsidyHalvingInterval = 500000;
+        consensus.BIP34Height = 1;
+        consensus.BIP34Hash = uint256();
+        consensus.BIP65Height = 1;
+        consensus.BIP66Height = 1;
+        consensus.CSVHeight = 1;
+        consensus.SegwitHeight = 1;
+        consensus.MinBIP9WarningHeight = 0;
+        consensus.powLimit = uint256S("00000377ae000000000000000000000000000000000000000000000000000000");
+        consensus.nPowTargetTimespan = 3.5 * 14 * 24 * 60 * 60;
+        consensus.nPowTargetSpacing = 1 * 60;
+        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowNoRetargeting = false;
+        consensus.nRuleChangeActivationThreshold = 1815;
+        consensus.nMinerConfirmationWindow = 2016;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;
+        consensus.nMinimumChainWork = uint256{};
+        consensus.defaultAssumeValid = uint256{};
+
+        pchMessageStart[0] = 0x0a;
+        pchMessageStart[1] = 0x03;
+        pchMessageStart[2] = 0x09;
+        pchMessageStart[3] = 0x07;
+        nDefaultPort = 38333;
+        nPruneAfterHeight = 1000;
+        m_assumed_blockchain_size = 0;
+        m_assumed_chain_state_size = 0;
+
+        // Stub genesis — same pszTimestamp/output script as other qogecoin chains, signet-nTime.
+        // No assert on hashGenesisBlock: signet is not functional in this release.
+        genesis = CreateGenesisBlock(1630500003, 0, 0x207fffff, 1, 100 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
+        assert(genesis.hashMerkleRoot == uint256S("0xa0bc982915c0435f85fa6e44b7e6bd7b32e2a6ad10f968d223d4a56fa2aabc9e"));
+
+        vFixedSeeds.clear();
+        vSeeds.clear();
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 65);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 105);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1, 206);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x03, 0xf6, 0xb8, 0x40};
+        base58Prefixes[EXT_SECRET_KEY] = {0x03, 0xf6, 0xb8, 0x17};
+        bech32_hrp = "tq"; // placeholder; signet HRP not defined for Qogecoin
+
+        fDefaultConsistencyChecks = false;
+        fRequireStandard = true;
+        m_is_test_chain = true;
+        m_is_mockable_chain = false;
+
+        checkpointData = {};
+        m_assumeutxo_data = MapAssumeutxo{};
+        chainTxData = ChainTxData{0, 0, 0};
+    }
+};
+
+
+/**
+ * Regression test: intended for private networks only. Has minimal difficulty to ensure that
+ * blocks can be found instantly.
+ */
+class CRegTestParams : public CChainParams {
+public:
+    explicit CRegTestParams(const ArgsManager& args) {
+        strNetworkID = CBaseChainParams::REGTEST;
+        consensus.signet_blocks = false;
+        consensus.signet_challenge.clear();
+        consensus.nSubsidyHalvingInterval = 150;
+        consensus.BIP34Height = 1; // Always active unless overridden
+        consensus.BIP34Hash = uint256();
+        consensus.BIP65Height = 1;  // Always active unless overridden
+        consensus.BIP66Height = 1;  // Always active unless overridden
+        consensus.CSVHeight = 1;    // Always active unless overridden
+        consensus.SegwitHeight = 0; // Always active unless overridden
+        consensus.MinBIP9WarningHeight = 0;
+        consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nPowTargetTimespan = 3.5 * 14 * 24 * 60 * 60; // matches qogecoin mainnet/testnet
+        consensus.nPowTargetSpacing = 1 * 60;
+        consensus.fPowAllowMinDifficultyBlocks = true;
+        consensus.fPowNoRetargeting = true;
+        consensus.nRuleChangeActivationThreshold = 108; // 75% of 144
+        consensus.nMinerConfirmationWindow = 144; // Faster than normal for regtest
+
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0;
+
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;
+
+        consensus.nMinimumChainWork = uint256{};
+        consensus.defaultAssumeValid = uint256{};
+
+        pchMessageStart[0] = 0xfa;
+        pchMessageStart[1] = 0xbf;
+        pchMessageStart[2] = 0xb5;
+        pchMessageStart[3] = 0xda;
+        nDefaultPort = 18444;
+        nPruneAfterHeight = args.GetBoolArg("-fastprune", false) ? 100 : 1000;
+        m_assumed_blockchain_size = 0;
+        m_assumed_chain_state_size = 0;
+
+        UpdateActivationParametersFromArgs(args);
+
+        // nTime=1630500002 (one after testnet), nNonce=0 (0x207fffff satisfies any hash),
+        // reward=100 COIN matching mainnet/testnet.
+        genesis = CreateGenesisBlock(1630500002, 0, 0x207fffff, 1, 100 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock == uint256S("0x7a69b7bb0c8f5ced03c9e64b770c30b52582d072cbe506339b8d5331b014d727"));
+        assert(genesis.hashMerkleRoot == uint256S("0xa0bc982915c0435f85fa6e44b7e6bd7b32e2a6ad10f968d223d4a56fa2aabc9e"));
+
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        vSeeds.emplace_back("dummySeed.invalid.");
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 65);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 105);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1, 206);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x03, 0xf6, 0xb8, 0x40};
+        base58Prefixes[EXT_SECRET_KEY] = {0x03, 0xf6, 0xb8, 0x17};
+
+        // NOTE: bech32_hrp = "bq" matches Symbiont Wallet's P2QPK address format for regtest testing.
+        // A distinct prefix (e.g. "bqrt") should be considered before Phase F (public testnet)
+        // to distinguish regtest from mainnet addresses.
+        bech32_hrp = "bq";
+
+        fDefaultConsistencyChecks = true;
+        fRequireStandard = false;
+        m_is_test_chain = true;
+        m_is_mockable_chain = true;
+
+        checkpointData = {
+            {
+                {0, uint256S("0x7a69b7bb0c8f5ced03c9e64b770c30b52582d072cbe506339b8d5331b014d727")},
+            }
+        };
+
+        m_assumeutxo_data = MapAssumeutxo{};
+
+        chainTxData = ChainTxData{
+            0,
+            0,
+            0,
+        };
+    }
+
+    void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout, int min_activation_height)
+    {
+        consensus.vDeployments[d].nStartTime = nStartTime;
+        consensus.vDeployments[d].nTimeout = nTimeout;
+        consensus.vDeployments[d].min_activation_height = min_activation_height;
+    }
+    void UpdateActivationParametersFromArgs(const ArgsManager& args);
+};
+
+
 static void MaybeUpdateHeights(const ArgsManager& args, Consensus::Params& consensus)
 {
     for (const std::string& arg : args.GetArgs("-testactivationheight")) {
@@ -288,6 +465,43 @@ static void MaybeUpdateHeights(const ArgsManager& args, Consensus::Params& conse
     }
 }
 
+void CRegTestParams::UpdateActivationParametersFromArgs(const ArgsManager& args)
+{
+    MaybeUpdateHeights(args, consensus);
+
+    if (!args.IsArgSet("-vbparams")) return;
+
+    for (const std::string& strDeployment : args.GetArgs("-vbparams")) {
+        std::vector<std::string> vDeploymentParams = SplitString(strDeployment, ':');
+        if (vDeploymentParams.size() < 3 || 4 < vDeploymentParams.size()) {
+            throw std::runtime_error("Version bits parameters malformed, expecting deployment:start:end[:min_activation_height]");
+        }
+        int64_t nStartTime, nTimeout;
+        int min_activation_height = 0;
+        if (!ParseInt64(vDeploymentParams[1], &nStartTime)) {
+            throw std::runtime_error(strprintf("Invalid nStartTime (%s)", vDeploymentParams[1]));
+        }
+        if (!ParseInt64(vDeploymentParams[2], &nTimeout)) {
+            throw std::runtime_error(strprintf("Invalid nTimeout (%s)", vDeploymentParams[2]));
+        }
+        if (vDeploymentParams.size() >= 4 && !ParseInt32(vDeploymentParams[3], &min_activation_height)) {
+            throw std::runtime_error(strprintf("Invalid min_activation_height (%s)", vDeploymentParams[3]));
+        }
+        bool found = false;
+        for (int j=0; j < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++j) {
+            if (vDeploymentParams[0] == VersionBitsDeploymentInfo[j].name) {
+                UpdateVersionBitsParameters(Consensus::DeploymentPos(j), nStartTime, nTimeout, min_activation_height);
+                found = true;
+                LogPrintf("Setting version bits activation parameters for %s to start=%ld, timeout=%ld, min_activation_height=%d\n", vDeploymentParams[0], nStartTime, nTimeout, min_activation_height);
+                break;
+            }
+        }
+        if (!found) {
+            throw std::runtime_error(strprintf("Invalid deployment (%s)", vDeploymentParams[0]));
+        }
+    }
+}
+
 static std::unique_ptr<const CChainParams> globalChainParams;
 
 const CChainParams &Params() {
@@ -301,8 +515,12 @@ std::unique_ptr<const CChainParams> CreateChainParams(const ArgsManager& args, c
         return std::unique_ptr<CChainParams>(new CMainParams());
     } else if (chain == CBaseChainParams::TESTNET) {
         return std::unique_ptr<CChainParams>(new CTestNetParams());
+    } else if (chain == CBaseChainParams::SIGNET) {
+        return std::unique_ptr<CChainParams>(new CSigNetParams(args));
+    } else if (chain == CBaseChainParams::REGTEST) {
+        return std::unique_ptr<CChainParams>(new CRegTestParams(args));
     }
-  //  throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
+    throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }
 
 void SelectParams(const std::string& network)
