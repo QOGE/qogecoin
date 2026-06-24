@@ -1959,6 +1959,11 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex& block_index, const Co
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
 
+    // Enforce SIP-QOGE-PQC-02 P2QPK SLH-DSA signature verification
+    if (DeploymentActiveAt(block_index, consensusparams, Consensus::DEPLOYMENT_P2QPK)) {
+        flags |= SCRIPT_VERIFY_P2QPK;
+    }
+
     return flags;
 }
 
