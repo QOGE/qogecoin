@@ -15,8 +15,11 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const Consens
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
-    return DarkGravityWave(pindexLast,params);
-    return DarkGravityWave(pindexLast,params);
+    // For chains with fPowNoRetargeting (regtest), never adjust difficulty — return the
+    // previous block's nBits unchanged. DarkGravityWave is not called because it
+    // ignores this flag and would tighten difficulty to zero when blocks arrive fast.
+    if (params.fPowNoRetargeting)
+        return pindexLast->nBits;
     return DarkGravityWave(pindexLast,params);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
