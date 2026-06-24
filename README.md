@@ -16,7 +16,7 @@ Wallet (symbiont-wallet): https://github.com/QOGE/symbiont-wallet
 
 This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which introduces a new P2QPK output type secured by SLH-DSA-SHA2-128f (FIPS 205) signatures. P2QPK outputs use witness version 2 and Bech32m addresses (`bq1z…`).
 
-**Changes vs upstream (`stable` branch, commits `8550582`–`ef91d00`):**
+**Changes vs upstream (`stable` branch, commits `8550582`–`56a2aed`):**
 
 | Commit | Description |
 |--------|-------------|
@@ -27,8 +27,9 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `816cd06` | Phase D step 4: wire `OQS_SIG_slh_dsa_pure_sha2_128f_verify` into the spend path |
 | `d005de1` | `CRegTestParams` + `CSigNetParams` stub |
 | `ef91d00` | Regtest mining fix — yescrypt PoWHash + `fPowNoRetargeting` before DGW |
+| `56a2aed` | Phase E: activate `DEPLOYMENT_P2QPK` in regtest — full SLH-DSA verification confirmed |
 
-**Phase E status (regtest validation):** Blocks mined, P2QPK UTXO confirmed on-chain, 17,088-byte SLH-DSA spend transaction mined (`witness_unknown` pre-activation path). Remaining: add `DEPLOYMENT_P2QPK` to `CRegTestParams.vDeployments` with `ALWAYS_ACTIVE`, set `SCRIPT_VERIFY_P2QPK` in regtest policy flags, re-confirm spend under full verification.
+**Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
 ## SLH-DSA constants
 
