@@ -54,9 +54,9 @@ Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance 
 ---
 
 Whitepaper: https://www.qogecoin.org/_downloads/fd0f7c423eaa00b6deef76295c7a9822/qogecoin_whitepaper.pdf  
-Website: https://qogecoin.org  
+Website: https://qoge.org  
 Discord: https://discord.gg/T8uYSDmtde  
-Blockexplorer: https://www.qogescan.com
+Blockexplorer: https://explorer.qoge.org
 
 Further information about Qogecoin is available in the [doc folder](/doc).
 
