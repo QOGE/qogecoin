@@ -50,7 +50,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 
 ## Governance
 
-Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance decision. See [docs/sips/](docs/sips/) for the full SIP-QOGE-PQC-02 specification.
+Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance decision. See [docs/sips/](https://github.com/QOGE/symbiont-wallet/tree/main/docs/sips) for the full SIP-QOGE-PQC-02 specification.
 
 ---
 
