@@ -29,10 +29,13 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `ef91d00` | Regtest mining fix — yescrypt PoWHash + `fPowNoRetargeting` before DGW |
 | `56a2aed` | Phase E: activate `DEPLOYMENT_P2QPK` in regtest — full SLH-DSA verification confirmed |
 | `89812b7c` | Phase F prep: `DEPLOYMENT_P2QPK` in `CTestNetParams` (ALWAYS_ACTIVE, bit 3); `bech32_hrp = "bqt"`; `DeploymentInfo()` in `rpc/blockchain.cpp` wired for all chains |
+| `09638b35` | Consensus safety: `BIP9Deployment` safe defaults (`bit{28}`, `nStartTime{NEVER_ACTIVE}`, `nTimeout{NEVER_ACTIVE}`); explicit `NEVER_ACTIVE` for `DEPLOYMENT_P2QPK` in `CMainParams` + `CSigNetParams` (per independent review) |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
 **Phase F status: IN PROGRESS.** `DEPLOYMENT_P2QPK` added to `CTestNetParams` (`ALWAYS_ACTIVE`, bit 3); `bech32_hrp = "bqt"` (distinguishes testnet P2QPK addresses from mainnet `bq`); `DeploymentInfo()` in `rpc/blockchain.cpp:1275` wired for all chains — `p2qpk: active: true` confirmed on both testnet and regtest. **Pending:** Option A liboqs build (`depends/packages/liboqs.mk`), independent BIP9 parameter review, public testnet node launch, Symbiont Wallet `bqt` HRP support.
+
+**Consensus safety fix (`09638b35`, per independent review).** `BIP9Deployment` struct fields `bit`, `nStartTime`, `nTimeout` lacked default member initializers, leaving the `DEPLOYMENT_P2QPK` slot in `CMainParams` and `CSigNetParams` with indeterminate values — a potential consensus-safety risk if `DeploymentActiveAt` or the versionbits state machine read them. Fixed: added `{28}`, `{NEVER_ACTIVE}`, `{NEVER_ACTIVE}` defaults to the struct, and explicitly configured `DEPLOYMENT_P2QPK` as `NEVER_ACTIVE` in both params classes. `NEVER_ACTIVE` deployments are correctly hidden from `getdeploymentinfo` (`DeploymentEnabled` returns false) — this is expected behavior, not a regression.
 
 ## SLH-DSA constants
 
