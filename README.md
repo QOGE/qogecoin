@@ -32,7 +32,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
-**Phase F prep (in progress).** `DEPLOYMENT_P2QPK` added to `CTestNetParams` (`ALWAYS_ACTIVE`) — testnet validates SLH-DSA transaction format without BIP9 signaling complexity (mainnet governance TBD). `bech32_hrp` changed from `"tq"` to `"bqt"` to visually distinguish testnet P2QPK addresses from mainnet (`bq`). `DeploymentInfo()` in `rpc/blockchain.cpp` now enumerates `DEPLOYMENT_P2QPK` on all chains. Confirmed: `p2qpk: active: true` in `getdeploymentinfo` on both regtest and testnet.
+**Phase F status: IN PROGRESS.** `DEPLOYMENT_P2QPK` added to `CTestNetParams` (`ALWAYS_ACTIVE`, bit 3); `bech32_hrp = "bqt"` (distinguishes testnet P2QPK addresses from mainnet `bq`); `DeploymentInfo()` in `rpc/blockchain.cpp:1275` wired for all chains — `p2qpk: active: true` confirmed on both testnet and regtest. **Pending:** Option A liboqs build (`depends/packages/liboqs.mk`), independent BIP9 parameter review, public testnet node launch, Symbiont Wallet `bqt` HRP support.
 
 ## SLH-DSA constants
 
