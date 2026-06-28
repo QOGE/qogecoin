@@ -16,7 +16,7 @@ Wallet (symbiont-wallet): https://github.com/QOGE/symbiont-wallet
 
 This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which introduces a new P2QPK output type secured by SLH-DSA-SHA2-128f (FIPS 205) signatures. P2QPK outputs use witness version 2 and Bech32m addresses (`bq1z…`).
 
-**Changes vs upstream (`stable` branch, commits `8550582`–`56a2aed`):**
+**Changes vs upstream (`stable` branch, commits `8550582`–`89812b7c`):**
 
 | Commit | Description |
 |--------|-------------|
@@ -28,8 +28,11 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `d005de1` | `CRegTestParams` + `CSigNetParams` stub |
 | `ef91d00` | Regtest mining fix — yescrypt PoWHash + `fPowNoRetargeting` before DGW |
 | `56a2aed` | Phase E: activate `DEPLOYMENT_P2QPK` in regtest — full SLH-DSA verification confirmed |
+| `89812b7c` | Phase F prep: `DEPLOYMENT_P2QPK` in `CTestNetParams` (ALWAYS_ACTIVE, bit 3); `bech32_hrp = "bqt"`; `DeploymentInfo()` in `rpc/blockchain.cpp` wired for all chains |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
+
+**Phase F prep (in progress).** `DEPLOYMENT_P2QPK` added to `CTestNetParams` (`ALWAYS_ACTIVE`) — testnet validates SLH-DSA transaction format without BIP9 signaling complexity (mainnet governance TBD). `bech32_hrp` changed from `"tq"` to `"bqt"` to visually distinguish testnet P2QPK addresses from mainnet (`bq`). `DeploymentInfo()` in `rpc/blockchain.cpp` now enumerates `DEPLOYMENT_P2QPK` on all chains. Confirmed: `p2qpk: active: true` in `getdeploymentinfo` on both regtest and testnet.
 
 ## SLH-DSA constants
 
@@ -39,7 +42,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | Public key | 32 bytes |
 | Signature | 17,088 bytes |
 | Witness version | 2 |
-| Address prefix | `bq` (Bech32m) |
+| Address prefix | `bq` (Bech32m, mainnet + regtest) / `bqt` (testnet) |
 
 ## Status
 
