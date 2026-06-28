@@ -1609,17 +1609,39 @@ fi
 
 dnl liboqs check (SIP-QOGE-PQC-02 Phase B — required for P2QPK / VerifyWitnessProgram)
 dnl
-dnl Option B (dev/Phase D-E only): detect the system-installed liboqs via pkg-config.
-dnl liboqs must be built from source with OQS_DIST_BUILD=ON and installed to /usr/local
-dnl before running ./configure (see symbiont-wallet README §2).
+dnl Option A (depends build, Phase F+): liboqs built as a static library by
+dnl depends/packages/liboqs.mk (version 0.15.0, OQS_DIST_BUILD=ON, BUILD_SHARED_LIBS=OFF)
+dnl and installed to $(prefix)/lib/liboqs.a. Selected when that file is present — i.e.
+dnl when ./configure is invoked with the depends prefix via CONFIG_SITE or --prefix.
+dnl LIBOQS_LIBS explicitly includes -lcrypto because liboqs.a links against OpenSSL
+dnl (OQS_USE_OPENSSL=ON) and private deps must be spelled out for static archives.
 dnl
-dnl Option A — depends/packages/liboqs.mk, CMake via $(package)_cmake, following the
-dnl native_libmultiprocess.mk template — is required before any cross-compiled build
-dnl (Phase F+). Currently using Option B (host pkg-config) for dev/Phase D-E only.
+dnl Option B (dev VM fallback, Phase D-E only): detect the system-installed liboqs
+dnl via pkg-config. liboqs must be built from source with OQS_DIST_BUILD=ON and
+dnl installed to /usr/local before running ./configure (see symbiont-wallet README §2).
+dnl This path uses the dynamic liboqs.so and should NOT be used for distribution builds.
 
-PKG_CHECK_MODULES([LIBOQS], [liboqs],
-  [AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
-  [AC_MSG_ERROR([liboqs not found. Build and install liboqs from source with OQS_DIST_BUILD=ON (see symbiont-wallet README §2), then re-run ./configure.])])
+liboqs_found=no
+liboqs_prefix=${prefix}
+if test "x${liboqs_prefix}" = "xNONE"; then
+  liboqs_prefix=${ac_default_prefix}
+fi
+if test -f "${liboqs_prefix}/lib/liboqs.a"; then
+  dnl Option A — depends-built static liboqs
+  LIBOQS_CFLAGS="-I${liboqs_prefix}/include"
+  LIBOQS_LIBS="-L${liboqs_prefix}/lib -loqs -lcrypto"
+  AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])
+  AC_MSG_NOTICE([liboqs: Option A — static lib at ${liboqs_prefix}/lib/liboqs.a])
+  liboqs_found=yes
+fi
+if test "x${liboqs_found}" = "xno"; then
+  dnl Option B — system pkg-config (dev VM only)
+  PKG_CHECK_MODULES([LIBOQS], [liboqs],
+    [AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])
+     AC_MSG_NOTICE([liboqs: Option B — system pkg-config (dev-only)])
+     liboqs_found=yes],
+    [AC_MSG_ERROR([liboqs not found. Build with depends (Option A: make -C depends HOST=... liboqs) or install liboqs with OQS_DIST_BUILD=ON to /usr/local (Option B — dev only; see symbiont-wallet README §2).])])
+fi
 
 dnl libmultiprocess library check
 
