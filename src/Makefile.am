@@ -767,7 +767,8 @@ qogecoin_tx_LDADD = \
   $(LIBQOGECOIN_UTIL) \
   $(LIBQOGECOIN_CONSENSUS) \
   $(LIBQOGECOIN_CRYPTO) \
-  $(LIBSECP256K1)
+  $(LIBSECP256K1) \
+  $(LIBOQS_LIBS)
 #
 
 # qogecoin-wallet binary #
@@ -786,7 +787,8 @@ qogecoin_wallet_LDADD = \
   $(LIBQOGECOIN_CRYPTO) \
   $(LIBSECP256K1) \
   $(BDB_LIBS) \
-  $(SQLITE_LIBS)
+  $(SQLITE_LIBS) \
+  $(LIBOQS_LIBS)
 
 if TARGET_WINDOWS
 qogecoin_wallet_SOURCES += qogecoin-wallet-res.rc
@@ -809,7 +811,8 @@ qogecoin_util_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBQOGECOIN_CONSENSUS) \
   $(LIBQOGECOIN_CRYPTO) \
-  $(LIBSECP256K1)
+  $(LIBSECP256K1) \
+  $(LIBOQS_LIBS)
 #
 
 # qogecoin-chainstate binary #

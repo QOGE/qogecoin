@@ -9,6 +9,7 @@ define $(package)_config_cmds
   $($(package)_cmake) \
     -DCMAKE_SYSTEM_PROCESSOR=$(host_arch) \
     -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
     -DOQS_USE_OPENSSL=ON \
     -DOQS_DIST_BUILD=ON \
     -DCMAKE_BUILD_TYPE=Release \
