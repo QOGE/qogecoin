@@ -198,6 +198,14 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0; // No activation delay
 
+        // Deployment of SIP-QOGE-PQC-02 P2QPK SLH-DSA (Phase F testnet)
+        // ALWAYS_ACTIVE: testnet validates tx format and SLH-DSA verification, not BIP9 signaling.
+        // Mainnet is where real BIP9 governance parameters (bit, start/timeout heights) apply.
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].bit = 3;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].min_activation_height = 0;
+
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("0x8e7f8c6096865a08773b52fd776a0e283d9037ff2b50b20a04f6a0feb01c68d9"); // 2143398
 
@@ -230,7 +238,10 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x03, 0xf6, 0xb8, 0x40};
         base58Prefixes[EXT_SECRET_KEY] = {0x03, 0xf6, 0xb8, 0x17};
 
-        bech32_hrp = "tq";
+        // NOTE: "bqt" distinguishes testnet P2QPK addresses from mainnet ("bq").
+        // Regtest uses "bq" for compatibility with Symbiont Wallet test harnesses.
+        // Consider "bqrt" for regtest in Phase F+ to fully distinguish all three.
+        bech32_hrp = "bqt";
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
 
