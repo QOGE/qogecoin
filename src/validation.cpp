@@ -812,12 +812,16 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
     }
 
     // Check for non-standard pay-to-script-hash in inputs
-    if (fRequireStandard && !AreInputsStandard(tx, m_view)) {
+    const bool p2qpk_active = DeploymentActiveAfter(
+        m_active_chainstate.m_chain.Tip(),
+        args.m_chainparams.GetConsensus(),
+        Consensus::DEPLOYMENT_P2QPK);
+    if (fRequireStandard && !AreInputsStandard(tx, m_view, p2qpk_active)) {
         return state.Invalid(TxValidationResult::TX_INPUTS_NOT_STANDARD, "bad-txns-nonstandard-inputs");
     }
 
     // Check for non-standard witnesses.
-    if (tx.HasWitness() && fRequireStandard && !IsWitnessStandard(tx, m_view))
+    if (tx.HasWitness() && fRequireStandard && !IsWitnessStandard(tx, m_view, p2qpk_active))
         return state.Invalid(TxValidationResult::TX_WITNESS_MUTATED, "bad-witness-nonstandard");
 
     int64_t nSigOpsCost = GetTransactionSigOpCost(tx, m_view, STANDARD_SCRIPT_VERIFY_FLAGS);

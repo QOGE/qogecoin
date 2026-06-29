@@ -161,7 +161,7 @@ bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeR
  *
  * Note that only the non-witness portion of the transaction is checked here.
  */
-bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
+bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs, bool p2qpk_active)
 {
     if (tx.IsCoinBase()) {
         return true; // Coinbases don't use vin normally
@@ -177,6 +177,15 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
             // flag in the script interpreter, but it can be helpful to catch
             // this type of NONSTANDARD transaction earlier in transaction
             // validation.
+            if (whichType == TxoutType::WITNESS_UNKNOWN && p2qpk_active) {
+                int witnessversion = 0;
+                std::vector<unsigned char> witnessprogram;
+                if (prev.scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram) &&
+                    witnessversion == 2 &&
+                    witnessprogram.size() == SLHDSA_PK_LEN) {
+                    continue; // P2QPK output — standard when deployment is active
+                }
+            }
             return false;
         } else if (whichType == TxoutType::SCRIPTHASH) {
             std::vector<std::vector<unsigned char> > stack;
@@ -195,7 +204,7 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
     return true;
 }
 
-bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
+bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs, bool p2qpk_active)
 {
     if (tx.IsCoinBase())
         return true; // Coinbases are skipped
@@ -244,6 +253,16 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
                 if (tx.vin[i].scriptWitness.stack[j].size() > MAX_STANDARD_P2WSH_STACK_ITEM_SIZE)
                     return false;
             }
+        }
+
+        // P2QPK policy (SIP-QOGE-PQC-02): witver==2, 32-byte program, non-P2SH
+        if (witnessversion == 2 && witnessprogram.size() == SLHDSA_PK_LEN && !p2sh) {
+            if (!p2qpk_active) return false;
+            const auto& stack = tx.vin[i].scriptWitness.stack;
+            if (stack.size() != 2) return false;
+            if (stack[0].size() != SLHDSA_SIG_LEN) return false; // sig: 17088 bytes
+            if (stack[1].size() != SLHDSA_PK_LEN) return false;  // pubkey: 32 bytes
+            continue;
         }
 
         // Check policy limits for Taproot spends:
