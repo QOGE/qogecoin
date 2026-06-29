@@ -16,7 +16,7 @@ Wallet (symbiont-wallet): https://github.com/QOGE/symbiont-wallet
 
 This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which introduces a new P2QPK output type secured by SLH-DSA-SHA2-128f (FIPS 205) signatures. P2QPK outputs use witness version 2 and Bech32m addresses (`bq1z…`).
 
-**Changes vs upstream (`stable` branch, commits `8550582`–`89812b7c`):**
+**Changes vs upstream (`stable` branch, commits `8550582`–`c00f6112d`):**
 
 | Commit | Description |
 |--------|-------------|
@@ -36,7 +36,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
-**Phase F status: IN PROGRESS.** `DEPLOYMENT_P2QPK` added to `CTestNetParams` (`ALWAYS_ACTIVE`, bit 3); `bech32_hrp = "bqt"`; `DeploymentInfo()` in `rpc/blockchain.cpp:1275` wired for all chains — `p2qpk: active: true` confirmed on both testnet and regtest. `address.Network` type + `bqt` HRP support added to Symbiont Wallet address package ([`83bbc73`](https://github.com/QOGE/symbiont-wallet/commit/83bbc73)). **Option A liboqs depends build fully verified** (`88c400c59`, `135c2fc0b`): `depends/packages/liboqs.mk` (0.15.0, static, `BUILD_TESTING=OFF`, `CMAKE_SYSTEM_PROCESSOR` fix); `configure.ac` Option A/B fallback; `$(LIBOQS_LIBS)` wired to all LDADD targets; `liboqs.a` (21 MB) installed; configure reports "Option A — static lib"; `script_p2qpk_tests` 5/5 pass. **`nRuleChangeActivationThreshold` fixed** (`c00f6112d`): was 8064 > window 2016 (BIP9 lock-in impossible); corrected to 1512 (75% of 2016), matching the ratio used by mainnet and regtest. **Pending:** independent BIP9 parameter review, public testnet node launch.
+**Phase F status: COMPLETE.** `DEPLOYMENT_P2QPK` in `CTestNetParams` (`ALWAYS_ACTIVE`, bit 3, `89812b7c`); `bech32_hrp = "bqt"`; `DeploymentInfo()` wired for all chains — `p2qpk: active: true` confirmed on testnet and regtest. `address.Network` + `bqt` HRP in Symbiont Wallet ([`83bbc73`](https://github.com/QOGE/symbiont-wallet/commit/83bbc73)). Option A liboqs depends build verified (`88c400c59`, `135c2fc0b`): `liboqs.a` (21 MB) installed; configure reports "Option A — static lib"; `script_p2qpk_tests` 5/5 pass. `nRuleChangeActivationThreshold` fixed to 1512/2016 (`c00f6112d`). Independent BIP9 parameter review: PASS. **Public testnet live at `167.86.81.222:42070`; P2QPK tx `357d4d0c...` confirmed in block 104.**
 
 **Consensus safety fix (`09638b35`, per independent review).** `BIP9Deployment` struct fields `bit`, `nStartTime`, `nTimeout` lacked default member initializers, leaving the `DEPLOYMENT_P2QPK` slot in `CMainParams` and `CSigNetParams` with indeterminate values — a potential consensus-safety risk if `DeploymentActiveAt` or the versionbits state machine read them. Fixed: added `{28}`, `{NEVER_ACTIVE}`, `{NEVER_ACTIVE}` defaults to the struct, and explicitly configured `DEPLOYMENT_P2QPK` as `NEVER_ACTIVE` in both params classes. `NEVER_ACTIVE` deployments are correctly hidden from `getdeploymentinfo` (`DeploymentEnabled` returns false) — this is expected behavior, not a regression.
 
