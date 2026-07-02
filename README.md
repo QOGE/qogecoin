@@ -34,6 +34,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `135c2fc0b` | Fix static link: `BUILD_TESTING=OFF` in liboqs.mk; `$(LIBOQS_LIBS)` added to `qogecoin_tx`, `qogecoin_wallet`, `qogecoin_util` LDADD — verified: 5/5 P2QPK tests pass |
 | `c00f6112d` | Fix `CTestNetParams`: `nRuleChangeActivationThreshold` 8064→1512 (75% of `nMinerConfirmationWindow=2016`); threshold previously exceeded window, making BIP9 lock-in structurally impossible on testnet |
 | `3262636a0` | P2QPK mempool standardness: policy exception in `src/policy/policy.cpp` + `policy.h` — P2QPK spends now relay through standard mempools on mainnet |
+| `061e88ea6` | Audit fix (comment-only): maintenance guardrail on `m_bip341_taproot_ready` gate in `SignatureHashP2QPK`; fix stale "liboqs stub" comment at witver==2 verify call |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
