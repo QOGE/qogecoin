@@ -56,7 +56,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 - **Post-activation:** `SCRIPT_VERIFY_P2QPK` flag triggers full SLH-DSA verification via liboqs.
 - **Do not send funds of value** to P2QPK addresses on mainnet before soft fork activation.
 - liboqs integration: **Option A** (`depends/packages/liboqs.mk`, static, verified `135c2fc0b`) is the consensus build path. Option B (host pkg-config) was dev/Phase D-E only.
-- **Symbiont Wallet test suite:** 61/61 passing (address 17, signer 7, keystore 17, wallet 20).
+- **Symbiont Wallet test suite:** 61/61 passing (address 17, signer 7, keystore 17, wallet 20). ⚠️ Key generation is not yet deterministic from the seed (open item M1.3) — users must back up both the seed hex **and** `qoge_wallet.db`; the seed alone cannot recover the wallet.
 
 ## Governance
 
