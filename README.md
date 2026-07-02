@@ -61,6 +61,18 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 - liboqs integration: **Option A** (`depends/packages/liboqs.mk`, static, verified `135c2fc0b`) is the consensus build path. Option B (host pkg-config) was dev/Phase D-E only.
 - **Symbiont Wallet test suite:** 61/61 passing (address 17, signer 7, keystore 17, wallet 20). ⚠️ Key generation is not yet deterministic from the seed (open item M1.3) — users must back up both the seed hex **and** `qoge_wallet.db`; the seed alone cannot recover the wallet.
 
+## Audit status
+
+**Audit 1 (sighash construction) — COMPLETE** (1–2 July 2026). Auditors: Claude Opus 4.8, ChatGPT 5.5, OpenAI Codex — independent, fresh context. Scope: `SignatureHashP2QPK` + SIP-QOGE-PQC-02a normative construction.
+
+- Test vector `8a17f83ed68457d5469f4bbcfc68ddaeaa70739522c1b6fb76685ba7b2008c38` independently recomputed to exact match by all three models.
+- Core security properties (cross-input reuse, cross-transaction replay, domain separation, length-extension): **unanimous PASS**.
+- Q1 malleability framing disagreement (Codex FAIL narrow): acknowledged — inherited SegWit property, fund-safe, unfixable, wallet-avoided; documented in SIP-02a §8.
+- Code fixes applied: sighash gate maintenance guardrail + stale "liboqs stub" comment corrected (`061e88ea6`, `b08e02108`).
+- **No finding is a bottleneck for mainnet activation.**
+
+Triage artifact: [`docs/sips/Audit_1_Sighash_Construction_Triage.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_1_Sighash_Construction_Triage.md)
+
 ## Governance
 
 Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance decision. See [docs/sips/](https://github.com/QOGE/symbiont-wallet/tree/main/docs/sips) for the full SIP-QOGE-PQC-02 specification.
