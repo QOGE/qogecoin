@@ -1585,6 +1585,12 @@ bool SignatureHashP2QPK(uint256& hash_out, const T& tx_to, uint32_t in_pos,
     assert(in_pos < tx_to.vin.size());
     // Precondition: caller (VerifyWitnessProgram) must have verified pubkey.size() == SLHDSA_PK_LEN
     // and sig.size() == SLHDSA_SIG_LEN before invoking this function (SIP-QOGE-PQC-02a §7-A).
+    // CRITICAL: this gate MUST stay on m_bip341_taproot_ready, NOT m_bip143_segwit_ready.
+    // Only m_bip341_taproot_ready is coupled to the computation of
+    // m_spent_amounts_single_hash / m_spent_scripts_single_hash (interpreter.cpp Init()).
+    // A witver-2 spend also sets m_bip143_segwit_ready — swapping this gate would let the
+    // sighash proceed with default-zero amount/script hashes, silently bypassing input-amount
+    // and spent-script binding. Fail-closed behavior depends on this line. Do not change.
     if (!(cache.m_bip341_taproot_ready && cache.m_spent_outputs_ready)) {
         return HandleMissingData(mdb);
     }
@@ -2032,7 +2038,8 @@ static bool VerifyWitnessProgram(const CScriptWitness& witness, int witversion, 
         if (memcmp(commitment.begin(), program.data(), SLHDSA_PK_LEN) != 0) {
             return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
         }
-        // Sighash + SLH-DSA verify (liboqs stub — see CheckSLHDSASignature TODO)
+        // Sighash + SLH-DSA verify via liboqs OQS_SIG_slh_dsa_pure_sha2_128f_verify
+        // (real verification — validated on regtest and public testnet)
         if (!checker.CheckSLHDSASignature(sig, pubkey, serror)) return false;
         return set_success(serror);
     } else {
