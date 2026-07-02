@@ -16,7 +16,7 @@ Wallet (symbiont-wallet): https://github.com/QOGE/symbiont-wallet
 
 This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which introduces a new P2QPK output type secured by SLH-DSA-SHA2-128f (FIPS 205) signatures. P2QPK outputs use witness version 2 and Bech32m addresses (`bq1z…`).
 
-**Changes vs upstream (`stable` branch, commits `8550582`–`c00f6112d`):**
+**Changes vs upstream (`stable` branch, commits `8550582`–`3262636a0`):**
 
 | Commit | Description |
 |--------|-------------|
@@ -33,6 +33,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `88c400c59` | Option A liboqs: `depends/packages/liboqs.mk` (0.15.0, static, `BUILD_TESTING=OFF`, `CMAKE_SYSTEM_PROCESSOR` fix); `configure.ac` Option A/B fallback; `packages.mk` updated |
 | `135c2fc0b` | Fix static link: `BUILD_TESTING=OFF` in liboqs.mk; `$(LIBOQS_LIBS)` added to `qogecoin_tx`, `qogecoin_wallet`, `qogecoin_util` LDADD — verified: 5/5 P2QPK tests pass |
 | `c00f6112d` | Fix `CTestNetParams`: `nRuleChangeActivationThreshold` 8064→1512 (75% of `nMinerConfirmationWindow=2016`); threshold previously exceeded window, making BIP9 lock-in structurally impossible on testnet |
+| `3262636a0` | P2QPK mempool standardness: policy exception in `src/policy/policy.cpp` + `policy.h` — P2QPK spends now relay through standard mempools on mainnet |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
@@ -55,6 +56,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 - **Pre-activation:** witver==2 outputs with 32-byte program are anyone-can-spend (correct per SIP-02 §3.4).
 - **Post-activation:** `SCRIPT_VERIFY_P2QPK` flag triggers full SLH-DSA verification via liboqs.
 - **Do not send funds of value** to P2QPK addresses on mainnet before soft fork activation.
+- **P2QPK mempool standardness: COMPLETE** (`3262636a0`) — policy exception in `src/policy/policy.cpp` + `policy.h`; P2QPK spends relay through standard mempools on mainnet.
 - liboqs integration: **Option A** (`depends/packages/liboqs.mk`, static, verified `135c2fc0b`) is the consensus build path. Option B (host pkg-config) was dev/Phase D-E only.
 - **Symbiont Wallet test suite:** 61/61 passing (address 17, signer 7, keystore 17, wallet 20). ⚠️ Key generation is not yet deterministic from the seed (open item M1.3) — users must back up both the seed hex **and** `qoge_wallet.db`; the seed alone cannot recover the wallet.
 
