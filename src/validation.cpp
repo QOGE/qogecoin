@@ -999,7 +999,15 @@ bool MemPoolAccept::PolicyScriptChecks(const ATMPArgs& args, Workspace& ws)
     const CTransaction& tx = *ws.m_ptx;
     TxValidationState& state = ws.m_state;
 
-    constexpr unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+    // SIP-QOGE-PQC-02: SCRIPT_VERIFY_P2QPK must NOT be in the compile-time STANDARD_SCRIPT_VERIFY_FLAGS
+    // (adding it there would enforce SLH-DSA verification at all heights unconditionally, breaking the
+    // pre-activation anyone-can-spend property per §3.4). Instead, gate it dynamically on the tip.
+    unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+    if (DeploymentActiveAfter(m_active_chainstate.m_chain.Tip(),
+                              args.m_chainparams.GetConsensus(),
+                              Consensus::DEPLOYMENT_P2QPK)) {
+        scriptVerifyFlags |= SCRIPT_VERIFY_P2QPK;
+    }
 
     // Check input scripts and signatures.
     // This is done last to help prevent CPU exhaustion denial-of-service attacks.
