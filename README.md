@@ -73,6 +73,18 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 
 Triage artifact: [`docs/sips/Audit_1_Sighash_Construction_Triage.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_1_Sighash_Construction_Triage.md)
 
+**Audit 2 (witness verification) — COMPLETE** (5 July 2026). Auditors: Codex, Claude Opus 4.8, ChatGPT 5.5, Grok — independent, fresh context. Scope: P2QPK mempool policy path (`PolicyScriptChecks`, `STANDARD_SCRIPT_VERIFY_FLAGS`).
+
+- **Bug confirmed:** `SCRIPT_VERIFY_P2QPK` was absent from `constexpr STANDARD_SCRIPT_VERIFY_FLAGS`; `PolicyScriptChecks` (`src/validation.cpp`) used this static set and never enforced SLH-DSA verification at the mempool policy layer post-activation.
+- 3/4 auditors found the bug (Codex, Opus 4.8, ChatGPT 5.5). Grok PASS — correctly analyzed `GetBlockScriptFlags`/`ConnectBlock` path (which is correct) without separately examining `STANDARD_SCRIPT_VERIFY_FLAGS`.
+- Fix disagreement: Opus proposed adding `SCRIPT_VERIFY_P2QPK` to the `constexpr` directly (wrong — would enforce SLH-DSA before activation, breaking pre-activation anyone-can-spend per SIP-02 §3.4); ChatGPT proposed dynamic `DeploymentActiveAfter` gate (correct). Resolved by direct code inspection.
+- **Fix applied (`88888dc51`):** dynamic `DeploymentActiveAfter` gate in `PolicyScriptChecks` — same pattern as `AreInputsStandard` (`3262636a0`).
+- `testmempoolaccept` false positive (`allowed:true` for invalid-sig P2QPK tx) discovered during verification — not by any auditor — confirmed fixed by the same commit. Verified live: `allowed:false`, `reject-reason: non-mandatory-script-verify-flag (Witness program hash mismatch)`.
+- All three consequences of the single root cause resolved: mempool acceptance of invalid sigs, "BUG! PLEASE REPORT THIS!" log spam, `test_accept` false positive.
+- **No finding is a bottleneck for mainnet activation** — block-connection path was always correct; however fix must be in place before mainnet activation.
+
+Triage artifact: [`docs/sips/Audit_2_Witness_Verification_Triage.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_2_Witness_Verification_Triage.md)
+
 ## Governance
 
 Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance decision. See [docs/sips/](https://github.com/QOGE/symbiont-wallet/tree/main/docs/sips) for the full SIP-QOGE-PQC-02 specification.
