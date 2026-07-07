@@ -23,6 +23,13 @@ extern "C" {
 
 typedef std::vector<unsigned char> valtype;
 
+// Guard: SLHDSA_PK_LEN must equal sizeof(uint256) — the commitment check in
+// VerifyWitnessProgram (memcmp against commitment.begin()) reads exactly
+// sizeof(uint256) bytes from the uint256 buffer. If SLHDSA_PK_LEN were ever
+// increased beyond 32, the memcmp would silently over-read the buffer.
+static_assert(SLHDSA_PK_LEN == sizeof(uint256),
+              "SLHDSA_PK_LEN must equal sizeof(uint256) — see VerifyWitnessProgram commitment check");
+
 namespace {
 
 inline bool set_success(ScriptError* ret)

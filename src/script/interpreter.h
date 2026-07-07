@@ -144,7 +144,10 @@ enum : uint32_t {
     // P2QPK (Pay to Quantum Public Key) consensus enforcement (SIP-QOGE-PQC-02).
     // Pre-activation: P2QPK witness v2 outputs are anyone-can-spend. After activation
     // (BIP9-style deployment, see SIP-QOGE-PQC-02 §3.4), this flag gates SLH-DSA verification.
-    // NOT SET in consensus until liboqs stub in CheckSLHDSASignature is replaced (Phase D step 4).
+    // Gated dynamically via DeploymentActiveAfter/DeploymentActiveAt — NOT in the compile-time
+    // STANDARD_SCRIPT_VERIFY_FLAGS (adding it there would enforce SLH-DSA before activation,
+    // breaking pre-activation anyone-can-spend per SIP-QOGE-PQC-02 §3.4). Verification is live
+    // (Phase D step 4 complete — validated on regtest and public testnet, see QOGE/qogecoin stable).
     SCRIPT_VERIFY_P2QPK = (1U << 21),
 
     // Constants to point to the highest flag in use. Add new flags above this line.
@@ -271,7 +274,9 @@ public:
 
     // P2QPK SLH-DSA signature check (SIP-QOGE-PQC-02a). Commitment and length checks are
     // performed by VerifyWitnessProgram before this is called. This method computes the
-    // P2QPKSighash and invokes the SLH-DSA verifier (liboqs — stubbed until Phase D step 4).
+    // P2QPKSighash and invokes the SLH-DSA verifier via liboqs (Phase D step 4 complete —
+    // real verification, validated on regtest and public testnet). Base class returns false;
+    // GenericTransactionSignatureChecker overrides with the live liboqs call.
     virtual bool CheckSLHDSASignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, ScriptError* serror = nullptr) const
     {
         return false;
