@@ -38,12 +38,15 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `7bade2229` | Audit 3 fixes: `static_assert(SLHDSA_PK_LEN == sizeof(uint256))` in `interpreter.cpp`; stale "liboqs stub / Phase D step 4" comments corrected in `interpreter.h` (×2) |
 | `88888dc51` | Audit 2 fix: `PolicyScriptChecks` dynamically gates `SCRIPT_VERIFY_P2QPK` via `DeploymentActiveAfter` — resolves mempool invalid-sig acceptance, log spam, and `testmempoolaccept` false positive post-activation |
 | — | **Real-parameter mainnet activation simulation (air-gapped, no commit):** Full BIP9 cycle confirmed at real mainnet params (`nMinerConfirmationWindow=2016`, `nRuleChangeActivationThreshold=1512`, genuine `nStartTime`): `DEFINED→STARTED` at 2016, `STARTED→LOCKED_IN` at 4032, `LOCKED_IN→ACTIVE` at 6048. Post-ACTIVE: real P2QPK spend confirmed; tampered spend rejected by `SCRIPT_VERIFY_P2QPK`. Closes last technical unknown before mainnet activation. |
+| `7912fa1c1` | **Mainnet activation parameters set:** `DEPLOYMENT_P2QPK` in `CMainParams` — `nStartTime=1786284720` (2026-08-09 14:12 UTC), `nTimeout=1794060720` (2026-11-07 14:12 UTC). `bit=3`, `nMinerConfirmationWindow=8064`, `nRuleChangeActivationThreshold=6048` unchanged. 5/5 `script_p2qpk_tests` pass. Independently reviewed by Codex and Grok Build — zero discrepancies. |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
 **Phase F status: COMPLETE.** `DEPLOYMENT_P2QPK` in `CTestNetParams` (`ALWAYS_ACTIVE`, bit 3, `89812b7c`); `bech32_hrp = "bqt"`; `DeploymentInfo()` wired for all chains — `p2qpk: active: true` confirmed on testnet and regtest. `address.Network` + `bqt` HRP in Symbiont Wallet ([`83bbc73`](https://github.com/QOGE/symbiont-wallet/commit/83bbc73)). Option A liboqs depends build verified (`88c400c59`, `135c2fc0b`): `liboqs.a` (21 MB) installed; configure reports "Option A — static lib"; `script_p2qpk_tests` 5/5 pass. `nRuleChangeActivationThreshold` fixed to 1512/2016 (`c00f6112d`). Independent BIP9 parameter review: PASS. **Public testnet live at `167.86.81.222:42070`; P2QPK tx `357d4d0c...` confirmed in block 104.**
 
-**Phase G status: COMPLETE.** Full BIP9 activation cycle validated end-to-end on an isolated, air-gapped two-node local simulation under real intended mainnet parameters (`nMinerConfirmationWindow=2016`, `nRuleChangeActivationThreshold=1512`, genuine future `nStartTime`). Phase transitions confirmed at exactly the predicted heights (2016 / 4032 / 6048). Post-`ACTIVE`: real P2QPK spend confirmed on both nodes; tampered spend correctly rejected by `SCRIPT_VERIFY_P2QPK`. **All technical unknowns resolved. What remains: SAOGEN governance decision on `nStartTime` and formal SIP ratification.**
+**Phase G status: COMPLETE.** Full BIP9 activation cycle validated end-to-end on an isolated, air-gapped two-node local simulation under real intended mainnet parameters (`nMinerConfirmationWindow=2016`, `nRuleChangeActivationThreshold=1512`, genuine future `nStartTime`). Phase transitions confirmed at exactly the predicted heights (2016 / 4032 / 6048). Post-`ACTIVE`: real P2QPK spend confirmed on both nodes; tampered spend correctly rejected by `SCRIPT_VERIFY_P2QPK`. All technical unknowns resolved.
+
+**Mainnet activation parameters set (`7912fa1c1`, 2026-07-26).** `bit=3`, `nStartTime=1786284720` (2026-08-09 14:12 UTC), `nTimeout=1794060720` (2026-11-07 14:12 UTC). `nMinerConfirmationWindow=8064` (5.6 days/window at 1-min blocks) and `nRuleChangeActivationThreshold=6048` (75%) are long-standing values unchanged by this commit. Timeline: `nStartTime`→STARTED 0–~5.6 days; STARTED→ACTIVE with continuous signaling exactly 11.2 days (two 8064-block windows); worst-case `nStartTime`→ACTIVE ~16.8 days; `nTimeout` provides ~74 days of margin. Independently reviewed by Codex and Grok Build — zero discrepancies. **What remains: formal SIP ratification (SAOGEN governance).**
 
 **Consensus safety fix (`09638b35`, per independent review).** `BIP9Deployment` struct fields `bit`, `nStartTime`, `nTimeout` lacked default member initializers, leaving the `DEPLOYMENT_P2QPK` slot in `CMainParams` and `CSigNetParams` with indeterminate values — a potential consensus-safety risk if `DeploymentActiveAt` or the versionbits state machine read them. Fixed: added `{28}`, `{NEVER_ACTIVE}`, `{NEVER_ACTIVE}` defaults to the struct, and explicitly configured `DEPLOYMENT_P2QPK` as `NEVER_ACTIVE` in both params classes. `NEVER_ACTIVE` deployments are correctly hidden from `getdeploymentinfo` (`DeploymentEnabled` returns false) — this is expected behavior, not a regression.
 
@@ -118,11 +121,21 @@ A full BIP9 activation cycle was run end-to-end on an isolated, air-gapped two-n
 
 Post-`ACTIVE`, a real P2QPK spend (SLH-DSA-SHA2-128f) was constructed via `SignP2QPKInput`, broadcast, and confirmed via natural mining on both nodes independently. A second, deliberately tampered spend (three signature bytes flipped) was correctly rejected by `SCRIPT_VERIFY_P2QPK` (`non-mandatory-script-verify-flag (Witness program hash mismatch)`), confirming enforcement is genuinely live under real parameters, not just under the earlier mechanism-only test.
 
-**This closes the last major open unknown before a real mainnet activation decision** — the BIP9 mechanism, the real window/threshold values, and P2QPK enforcement have all now been validated together, end-to-end, under realistic conditions. What remains is a governance decision on the real `nStartTime` and formal SIP ratification, not further technical validation.
+**This closed the last major open unknown before a real mainnet activation decision** — the BIP9 mechanism, the real window/threshold values, and P2QPK enforcement validated together, end-to-end, under realistic conditions. Note: the simulation used testnet-scale window parameters (2016/1512); actual `CMainParams` values are `nMinerConfirmationWindow=8064` (5.6 days/window) and `nRuleChangeActivationThreshold=6048` (75%) — long-standing values in the tree, unchanged. Mainnet activation parameters have since been set (see Phase G status above).
 
 ## Governance
 
-Activation parameters (BIP9 bit, start/timeout heights) are a SAOGEN governance decision. See [docs/sips/](https://github.com/QOGE/symbiont-wallet/tree/main/docs/sips) for the full SIP-QOGE-PQC-02 specification.
+Mainnet activation parameters are set (commit `7912fa1c1`, 2026-07-26):
+
+| Parameter | Value |
+|-----------|-------|
+| `bit` | 3 |
+| `nStartTime` | 1786284720 (2026-08-09 14:12 UTC) |
+| `nTimeout` | 1794060720 (2026-11-07 14:12 UTC) |
+| `nMinerConfirmationWindow` | 8064 (5.6 days/window at 1-min blocks) |
+| `nRuleChangeActivationThreshold` | 6048 (75%) |
+
+Independently reviewed by Codex and Grok Build — zero discrepancies on any parameter value. What remains: formal SIP ratification (SAOGEN governance). See [docs/sips/](https://github.com/QOGE/symbiont-wallet/tree/main/docs/sips) for the full SIP-QOGE-PQC-02 specification.
 
 ---
 
