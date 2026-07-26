@@ -93,12 +93,14 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0; // No activation delay
 
-        // P2QPK (SIP-QOGE-PQC-02): explicitly NEVER_ACTIVE on mainnet until governance
-        // selects activation parameters (bit, nStartTime, nTimeout).
-        // Do not leave unconfigured — BIP9Deployment lacks safe defaults in this tree.
+        // P2QPK (SIP-QOGE-PQC-02) real mainnet activation — set 2026-07-26.
+        // nStartTime = now + 14 days (2026-08-09), nTimeout = nStartTime + 90 days (2026-11-07).
+        // bit=3, nMinerConfirmationWindow=8064 (5.6 days/window), nRuleChangeActivationThreshold=6048 (75%).
+        // Validated end-to-end via real-parameter BIP9 simulation (2026-07).
+        // See docs/sips/SIP-QOGE-PQC-02.md §5 Phase G.
         consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].bit = 3;
-        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nStartTime = 1786284720; // 2026-08-09 14:12 UTC
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].nTimeout = 1794060720;   // 2026-11-07 14:12 UTC
         consensus.vDeployments[Consensus::DEPLOYMENT_P2QPK].min_activation_height = 0;
 
         consensus.nMinimumChainWork = uint256S("0x00");
