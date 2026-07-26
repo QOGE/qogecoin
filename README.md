@@ -64,7 +64,7 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 - **Do not send funds of value** to P2QPK addresses on mainnet before soft fork activation.
 - **P2QPK mempool standardness: COMPLETE** (`3262636a0`) — policy exception in `src/policy/policy.cpp` + `policy.h`; P2QPK spends relay through standard mempools on mainnet.
 - liboqs integration: **Option A** (`depends/packages/liboqs.mk`, static, verified `135c2fc0b`) is the consensus build path. Option B (host pkg-config) was dev/Phase D-E only.
-- **Symbiont Wallet test suite:** 72/72 passing (address 17, signer 11, keystore 17, wallet 27).
+- **Symbiont Wallet test suite:** 73/73 passing (address 17, signer 11, keystore 17, wallet 28).
 - **M1.3 — deterministic keygen: RESOLVED** (`98b1332`, `5342f1b` in symbiont-wallet). Keys are now deterministically derived from the master seed via HKDF + a liboqs RNG-hook mechanism. Forward-looking only — addresses generated before this fix remain DB-only recoverable; addresses generated after are fully seed-recoverable.
 - **Testnet liboqs version alignment — COMPLETE.** The public testnet node at `167.86.81.222` was rebuilt against the pinned Option A liboqs 0.15.0 (previously running an unpinned `0.16.0-rc1` build), closing the reproducibility gap flagged in Audit 3.
 
