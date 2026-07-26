@@ -59,7 +59,9 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 - **Do not send funds of value** to P2QPK addresses on mainnet before soft fork activation.
 - **P2QPK mempool standardness: COMPLETE** (`3262636a0`) — policy exception in `src/policy/policy.cpp` + `policy.h`; P2QPK spends relay through standard mempools on mainnet.
 - liboqs integration: **Option A** (`depends/packages/liboqs.mk`, static, verified `135c2fc0b`) is the consensus build path. Option B (host pkg-config) was dev/Phase D-E only.
-- **Symbiont Wallet test suite:** 61/61 passing (address 17, signer 7, keystore 17, wallet 20). ⚠️ Key generation is not yet deterministic from the seed (open item M1.3) — users must back up both the seed hex **and** `qoge_wallet.db`; the seed alone cannot recover the wallet.
+- **Symbiont Wallet test suite:** 72/72 passing (address 17, signer 11, keystore 17, wallet 27).
+- **M1.3 — deterministic keygen: RESOLVED** (`98b1332`, `5342f1b` in symbiont-wallet). Keys are now deterministically derived from the master seed via HKDF + a liboqs RNG-hook mechanism. Forward-looking only — addresses generated before this fix remain DB-only recoverable; addresses generated after are fully seed-recoverable.
+- **Testnet liboqs version alignment — COMPLETE.** The public testnet node at `167.86.81.222` was rebuilt against the pinned Option A liboqs 0.15.0 (previously running an unpinned `0.16.0-rc1` build), closing the reproducibility gap flagged in Audit 3.
 
 ## Audit status
 
@@ -84,6 +86,34 @@ Triage artifact: [`docs/sips/Audit_1_Sighash_Construction_Triage.md`](https://gi
 - **No finding is a bottleneck for mainnet activation** — block-connection path was always correct; however fix must be in place before mainnet activation.
 
 Triage artifact: [`docs/sips/Audit_2_Witness_Verification_Triage.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_2_Witness_Verification_Triage.md)
+
+**Audit 3 (liboqs integration) — COMPLETE** (6 July 2026). Six independent passes: OpenAI Codex (remote + local), Grok Build (local), Claude Opus 4.8 (remote, hash-verified liboqs tarball), ChatGPT 5.5 (remote, source-only), Claude Code (local, dispute resolution). Algorithm identifiers, size constants (32/64/17088), and static-linking design unanimously confirmed correct. Build-path dispute (Opus claimed Option B was committed; Codex/Grok Build empirically confirmed Option A via `ldd`/`readelf`) — resolved in favor of the empirical passes. M1.3 remediation path clarified: liboqs 0.15.0 has no seeded SIG keygen API; `OQS_randombytes_custom_algorithm()` hook identified as the path (subsequently implemented — see M1.3 above). **No finding is a bottleneck for mainnet activation.**
+
+Triage artifact: [`docs/sips/Audit_3_liboqs_Integration_Triage_Summary.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_3_liboqs_Integration_Triage_Summary.md)
+
+**Audit 4 (single-use address lifecycle) — COMPLETE** (7–9 July 2026, two-pass + three-pass convergence). Auditors: Grok Build, Claude Sonnet 4.6, Codex CLI. Original design redesigned: automatic key destruction on confirmation replaced with decoupled flagging (`OnConfirmation`, automatic, reversible) vs. destruction (`PurgeSpentKey`, optional, manual, irreversible, never automatic). Change-output routing enforcement added to `SignP2QPKInput`/`SignTransaction` (exact scriptPubKey binding check). **Overall verdict: PASS — ready for mainnet.**
+
+Triage artifacts: [`docs/sips/Audit_4_single_use_lifecycle_triage_summary.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_4_single_use_lifecycle_triage_summary.md), [`docs/sips/Audit_4b_single_use_lifecycle_second_pass.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_4b_single_use_lifecycle_second_pass.md)
+
+**Audit 5 (wallet lifecycle, unstructured) — COMPLETE** (6 July 2026). Codex CLI, self-directed read-only review. One false positive ruled out (address-reservation "bug" is intentional peek semantics). Two real findings fixed: retirement atomicity, and a `SignP2QPKInput` cross-check gap (`FromAddr` vs. spent UTXO script, `4f80192`).
+
+Triage artifact: [`docs/sips/Audit_5_Wallet_Lifecycle_Triage_Summary.md`](https://github.com/QOGE/symbiont-wallet/blob/main/docs/sips/Audit_5_Wallet_Lifecycle_Triage_Summary.md)
+
+## Real-Parameter Mainnet Activation Simulation
+
+A full BIP9 activation cycle was run end-to-end on an isolated, air-gapped two-node local simulation using the REAL intended mainnet parameters — `nMinerConfirmationWindow=2016`, `nRuleChangeActivationThreshold=1512` (75%), a genuine future `nStartTime` — not the compressed test values used in an earlier mechanism-only simulation.
+
+**Result: full activation cycle confirmed at exactly the predicted heights:**
+
+| Phase | Height |
+|---|---|
+| `DEFINED → STARTED` | 2016 |
+| `STARTED → LOCKED_IN` | 4032 |
+| `LOCKED_IN → ACTIVE` | 6048 |
+
+Post-`ACTIVE`, a real P2QPK spend (SLH-DSA-SHA2-128f) was constructed via `SignP2QPKInput`, broadcast, and confirmed via natural mining on both nodes independently. A second, deliberately tampered spend (three signature bytes flipped) was correctly rejected by `SCRIPT_VERIFY_P2QPK` (`non-mandatory-script-verify-flag (Witness program hash mismatch)`), confirming enforcement is genuinely live under real parameters, not just under the earlier mechanism-only test.
+
+**This closes the last major open unknown before a real mainnet activation decision** — the BIP9 mechanism, the real window/threshold values, and P2QPK enforcement have all now been validated together, end-to-end, under realistic conditions. What remains is a governance decision on the real `nStartTime` and formal SIP ratification, not further technical validation.
 
 ## Governance
 
