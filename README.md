@@ -35,6 +35,9 @@ This fork implements the node-side of the SIP-QOGE-PQC-02 soft fork, which intro
 | `c00f6112d` | Fix `CTestNetParams`: `nRuleChangeActivationThreshold` 8064→1512 (75% of `nMinerConfirmationWindow=2016`); threshold previously exceeded window, making BIP9 lock-in structurally impossible on testnet |
 | `3262636a0` | P2QPK mempool standardness: policy exception in `src/policy/policy.cpp` + `policy.h` — P2QPK spends now relay through standard mempools on mainnet |
 | `061e88ea6` | Audit fix (comment-only): maintenance guardrail on `m_bip341_taproot_ready` gate in `SignatureHashP2QPK`; fix stale "liboqs stub" comment at witver==2 verify call |
+| `7bade2229` | Audit 3 fixes: `static_assert(SLHDSA_PK_LEN == sizeof(uint256))` in `interpreter.cpp`; stale "liboqs stub / Phase D step 4" comments corrected in `interpreter.h` (×2) |
+| `88888dc51` | Audit 2 fix: `PolicyScriptChecks` dynamically gates `SCRIPT_VERIFY_P2QPK` via `DeploymentActiveAfter` — resolves mempool invalid-sig acceptance, log spam, and `testmempoolaccept` false positive post-activation |
+| — | **Real-parameter mainnet activation simulation (air-gapped, no commit):** Full BIP9 cycle confirmed at real mainnet params (`nMinerConfirmationWindow=2016`, `nRuleChangeActivationThreshold=1512`, genuine `nStartTime`): `DEFINED→STARTED` at 2016, `STARTED→LOCKED_IN` at 4032, `LOCKED_IN→ACTIVE` at 6048. Post-ACTIVE: real P2QPK spend confirmed; tampered spend rejected by `SCRIPT_VERIFY_P2QPK`. Closes last technical unknown before mainnet activation. |
 
 **Phase E status: COMPLETE.** `DEPLOYMENT_P2QPK` added to `DeploymentPos` enum, `deploymentinfo.cpp`, and `CRegTestParams.vDeployments` (`ALWAYS_ACTIVE`). `DeploymentActiveAt(DEPLOYMENT_P2QPK)` gates `SCRIPT_VERIFY_P2QPK` in `GetBlockScriptFlags`. Validated on regtest: tampered-sig spend rejected (`SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH` from `OQS_SIG_slh_dsa_pure_sha2_128f_verify`), real SLH-DSA spend accepted and confirmed on-chain.
 
