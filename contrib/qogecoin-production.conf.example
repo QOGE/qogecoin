@@ -1,0 +1,105 @@
+##
+## qogecoin-production.conf.example
+##
+## Reference production node configuration for QOGE/qogecoin.
+## Every setting below reflects a specific operational lesson learned during
+## this project's development, testnet, and mainnet activation simulation.
+##
+## HOW TO USE:
+##   cp contrib/qogecoin-production.conf.example ~/.qogecoin/qogecoin.conf
+##   Edit the file — change ALL placeholder credentials before starting the node.
+##
+## !! NEVER use the placeholder rpcuser/rpcpassword values as-is in production !!
+##
+
+##############################################################################
+## Network
+##############################################################################
+
+# Accept RPC connections and inbound peer connections.
+server=1
+listen=1
+
+##############################################################################
+## RPC credentials — CHANGE THESE BEFORE USE
+##
+## !! PLACEHOLDER VALUES — DO NOT USE IN PRODUCTION !!
+## Generate a strong random password (e.g. openssl rand -hex 32).
+## Alternatively, use rpcauth= (see share/rpcauth/rpcauth.py) so the
+## plaintext password never appears in this file.
+##############################################################################
+
+rpcuser=CHANGE_ME_placeholder_user
+rpcpassword=CHANGE_ME_placeholder_password_use_openssl_rand_hex_32
+
+# Bind RPC only to localhost. Never expose the RPC port to the public
+# internet — there is no TLS; credentials are sent in the clear.
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+
+##############################################################################
+## Fee policy
+##
+## LESSON LEARNED: Fee estimation requires historical mempool data to build
+## its internal model. On a low-activity or newly-synced chain (including
+## testnet and early mainnet), the estimator has no data and returns an error.
+## Without these fallback values, sendmany, sendtoaddress, and any
+## payment-processing pipeline will fail with "Fee estimation failed. Set
+## -paytxfee or read the documentation for -fallbackfee and -settxfee" on
+## every single call — silently halting payment processing with no obvious
+## startup-time error. Root-cause confirmed during ZNY-NOMP payment pipeline
+## investigation.
+##############################################################################
+
+fallbackfee=0.0001
+paytxfee=0.0001
+mintxfee=0.00001
+
+##############################################################################
+## Wallet loading — persistent across restarts
+##
+## LESSON LEARNED: A wallet loaded once via the loadwallet RPC is NOT
+## reloaded automatically on daemon restart. After any restart the node
+## starts with no wallet, all wallet RPCs return error -18 ("No wallet is
+## loaded"), and payment processing halts silently — there is no startup-time
+## warning. If this node runs a pool or payment-processing wallet, name it
+## here so it is always loaded at startup. Uncomment and set the wallet name.
+##
+## wallet=<your-wallet-name-here>
+##############################################################################
+
+##############################################################################
+## Change address type — bech32 (SegWit v0 / P2WPKH), NOT Taproot
+##
+## LESSON LEARNED: Bitcoin-Core-derived wallets default new CHANGE outputs
+## (not fresh receiving addresses — change specifically) to Taproot (bech32m /
+## P2TR) once Taproot is network-active, since there is no interoperability
+## concern for change. Taproot outputs commit to a tweaked secp256k1 point
+## Q = P + t*G visible on-chain from the moment the output is funded — the
+## raw (tweaked) public key is exposed at rest, before any spend attempt.
+##
+## For a project whose entire purpose is minimising at-rest public-key
+## exposure (SIP-QOGE-PQC-01/02, HNDL defence), Taproot change outputs are
+## exactly backwards. Force bech32 (P2WPKH) instead: the public key is
+## hidden behind HASH160 at rest and revealed only at spend time, during the
+## SLH-DSA witness-validation window. This does not give full P2QPK-level
+## protection (only Symbiont Wallet generates true P2QPK outputs), but it
+## eliminates the gratuitous at-rest exposure that Taproot change would add.
+##
+## Applies under [main]; replicate under [test] / [regtest] if needed there.
+##############################################################################
+
+[main]
+changetype=bech32
+
+[test]
+changetype=bech32
+
+[regtest]
+changetype=bech32
+
+##############################################################################
+## Connections
+##############################################################################
+
+maxconnections=125
