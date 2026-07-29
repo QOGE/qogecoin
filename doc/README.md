@@ -39,13 +39,14 @@ Building
 The following are developer notes on how to build Qogecoin Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
 - [Dependencies](dependencies.md)
-- [macOS Build Notes](build-osx.md)
-- [Unix Build Notes](build-unix.md)
-- [Windows Build Notes](build-windows.md)
-- [FreeBSD Build Notes](build-freebsd.md)
-- [OpenBSD Build Notes](build-openbsd.md)
-- [NetBSD Build Notes](build-netbsd.md)
-- [Android Build Notes](build-android.md)
+- [Ubuntu 24.04 Build Tutorial](build-ubuntu-2404.md) — **current, tested build path for this fork** (validated end-to-end with liboqs Option A static build)
+- [macOS Build Notes](build-osx-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [Unix Build Notes](build-unix-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [Windows Build Notes](build-windows-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [FreeBSD Build Notes](build-freebsd-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [OpenBSD Build Notes](build-openbsd-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [NetBSD Build Notes](build-netbsd-DEPRECATED.md) *(deprecated — untested for this fork)*
+- [Android Build Notes](build-android-DEPRECATED.md) *(deprecated — untested for this fork)*
 
 Development
 ---------------------
