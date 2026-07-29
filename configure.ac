@@ -1611,8 +1611,11 @@ dnl liboqs check (SIP-QOGE-PQC-02 Phase B — required for P2QPK / VerifyWitness
 dnl
 dnl Option A (depends build, Phase F+): liboqs built as a static library by
 dnl depends/packages/liboqs.mk (version 0.15.0, OQS_DIST_BUILD=ON, BUILD_SHARED_LIBS=OFF)
-dnl and installed to $(prefix)/lib/liboqs.a. Selected when that file is present — i.e.
-dnl when ./configure is invoked with the depends prefix via CONFIG_SITE or --prefix.
+dnl and installed to $(depends_prefix)/lib/liboqs.a. depends/config.site.in sets
+dnl depends_prefix (via CONFIG_SITE) but deliberately never overrides autoconf's
+dnl own $prefix, so $prefix cannot be used to locate the depends tree; use
+dnl depends_prefix directly when CONFIG_SITE supplied one, else fall back to the
+dnl ordinary install prefix for non-depends builds.
 dnl LIBOQS_LIBS explicitly includes -lcrypto because liboqs.a links against OpenSSL
 dnl (OQS_USE_OPENSSL=ON) and private deps must be spelled out for static archives.
 dnl
@@ -1622,9 +1625,13 @@ dnl installed to /usr/local before running ./configure (see symbiont-wallet READ
 dnl This path uses the dynamic liboqs.so and should NOT be used for distribution builds.
 
 liboqs_found=no
-liboqs_prefix=${prefix}
-if test "x${liboqs_prefix}" = "xNONE"; then
-  liboqs_prefix=${ac_default_prefix}
+if test -n "${depends_prefix}"; then
+  liboqs_prefix=${depends_prefix}
+else
+  liboqs_prefix=${prefix}
+  if test "x${liboqs_prefix}" = "xNONE"; then
+    liboqs_prefix=${ac_default_prefix}
+  fi
 fi
 if test -f "${liboqs_prefix}/lib/liboqs.a"; then
   dnl Option A — depends-built static liboqs
