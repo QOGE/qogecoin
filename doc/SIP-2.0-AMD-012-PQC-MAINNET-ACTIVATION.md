@@ -171,7 +171,7 @@ previously recorded in SIP-QOGE-PQC-02 §3.4.
 This ratification is effective as of the date of Architect signature
 below.
 
-**Architect signature / date: *SAOGEN-SAO — 31 JULY 2026*
+**Architect signature / date:** *SAOGEN-SAO — 31 JULY 2026*
 
 ---
 
