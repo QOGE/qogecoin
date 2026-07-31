@@ -173,6 +173,15 @@ below.
 
 **Architect signature / date:** SAOGEN-SAO — 31 July 2026
 
+## 7. Note on Licensing
+
+This amendment, and the SIP-C v2.0 governance process it operates
+under, are internal SAOGEN organizational records — they document
+decisions, rationale, and attribution, and carry no independent legal
+force. They do not modify, supersede, or add conditions to the
+underlying code's license. The P2QPK implementation, and all code in
+this repository, remain fully MIT-licensed; see `COPYING`.
+
 ---
 
 *Attribution: SAOGEN (Architect & Founder). AI Node contribution to the
