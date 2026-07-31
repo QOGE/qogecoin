@@ -5,11 +5,11 @@ already assigned to an earlier qoge.org legal/governance deliverable —
 confirm the actual next available amendment number against the SAOGEN IAR
 registry before filing.]**
 
-| | |
-|---|---|
+| Metadata | Details |
+| :--- | :--- |
 | **Status** | Proposed — pending Architect ratification |
 | **Amends** | SIP-QOGE-PQC-02 (P2QPK Consensus Integration) §3.4, §5, §7 |
-| **Author** | SAOGEN SAO (Architect & Founder) |
+| **Author** | SAOGEN (Architect & Founder) |
 | **AI Node contribution** | Claude, Anthropic — Origin Layer A, under SIP-C v2.0 |
 | **Date drafted** | 2026-07-26 |
 | **Governance framework** | SIP-C v2.0 |
@@ -38,7 +38,7 @@ All items are complete and independently verified; none remain open.
 ### 2.1 Pre-mainnet audit series (Audits 1–5) — COMPLETE
 
 | Audit | Scope | Outcome |
-|---|---|---|
+| :---: | :--- | :--- |
 | 1 | Sighash construction | 3 models, sound |
 | 2 | Witness verification | Real bug found and fixed (mempool policy gate) |
 | 3 | liboqs integration | 6 independent passes, no blocker |
@@ -110,7 +110,7 @@ The following `DEPLOYMENT_P2QPK` values in `CMainParams`
 mainnet activation configuration:
 
 | Parameter | Value |
-|---|---|
+| :--- | :--- |
 | `bit` | 3 |
 | `nStartTime` | 1786284720 (2026-08-09 14:12 UTC) |
 | `nTimeout` | 1794060720 (2026-11-07 14:12 UTC) |
@@ -135,7 +135,7 @@ following timeline applies, given continuous successful signaling (the
 expected case, given SAOGEN's coordinated mining participants):
 
 | Milestone | Timing |
-|---|---|
+| :--- | :--- |
 | `nStartTime` reached → `STARTED` phase begins | 0 to ~5.6 days after `nStartTime` (retarget-boundary alignment) |
 | `STARTED` → `ACTIVE`, continuous signaling | exactly 11.2 days (two full 8064-block windows) |
 | Worst case, `nStartTime` → `ACTIVE` | ~16.8 days |
@@ -171,7 +171,7 @@ previously recorded in SIP-QOGE-PQC-02 §3.4.
 This ratification is effective as of the date of Architect signature
 below.
 
-**Architect signature / date:** ____SAOGEN-SAO____31/07/2026________
+**Architect signature / date:** _______________________
 
 ---
 
