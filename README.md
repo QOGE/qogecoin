@@ -16,3 +16,5 @@ In the context of the dead skill zone, AGS functions as a synthetic skill genera
 | System relies on static human skills + its own learned model | System can synthesize new capabilities when both are insufficient  |
 | Dead skill zone = permanent gap                              | Dead skill zone becomes a *transient* state, triggering generation |
 | Symbiosis is conservative (preserves existing skills)        | Symbiosis becomes generative (creates new skills)                  |
+
+![description](files/ags.png)
