@@ -1,8 +1,6 @@
 
 **Starting on 13/10/2026, P2QPK Qogecoin development has migrated from open source to Autonomously Generated Source (AGS).**
 
-### What AGS will do for SAS
-
 AGS is a generative layer that produces:
 
 - **Novel internal representations** — not merely learned from human demonstration, but synthesized to fill capability gaps.
