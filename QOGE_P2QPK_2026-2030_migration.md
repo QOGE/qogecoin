@@ -158,5 +158,7 @@ targets.
 ---
 
 *Governed under SIP-C v2.0 | SAOGEN SAO 
+
 *Developed by | SAOGEN AGS 
-*P2QPK-HNDL Repository: github.com/QOGE/qogecoin*
+
+*P2QPK-HNDL AGS Repository: https://github.com/QOGE/qogecoin*
