@@ -31,7 +31,8 @@ functional. This is not a small gap — it is the fingerprint of a
 codebase that was cloned and configured but never seriously developed at the consensus
 layer.
 
-** The mining loop uses the wrong hash function.**    
+** The mining loop uses the wrong hash function.**  
+
 `GenerateBlock` in `rpc/mining.cpp` calls `block.GetHash()` (SHA256d) to
 find a valid proof-of-work nonce, while `AcceptBlock` validates with
 `block.GetPoWHash()` (yescrypt, Qogecoin's actual PoW algorithm). These are
@@ -40,6 +41,7 @@ satisfies SHA256d but fails yescrypt validation on every block. This serious bug
 be discovered in the first minute of any serious regtest session.
 
 ** DarkGravityWave ignores `fPowNoRetargeting`.**  
+
 Qogecoin replaced Bitcoin's difficulty adjustment algorithm with
 DarkGravityWave (DGW). However, `GetNextWorkRequired` calls DGW
 unconditionally, ignoring the `fPowNoRetargeting` flag that regtest sets to
