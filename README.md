@@ -5,11 +5,12 @@
 
 AGS-generated software will be made available for deployment through the **SAS Interface on SAOGEN**.
 
-All the Post-Quantum public infrastructure remains in place:  
-web: https://qoge.org  
-pool1: https://postquantum.qoge.org  
-pool2: https://pool.qoge.org  
-miners exchange: https://exchange.qoge.org  
+All public post-quantum infrastructure remains operational:
+
+- **Website:** https://qoge.org
+- **Mining Pool 1:** https://postquantum.qoge.org
+- **Mining Pool 2:** https://pool.qoge.org
+- **Miners' Exchange:** https://exchange.qoge.org 
 
 ### What Is AGS?
 
