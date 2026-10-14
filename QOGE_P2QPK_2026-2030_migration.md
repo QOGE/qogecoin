@@ -30,12 +30,12 @@ functional. This is not a small gap — it is the fingerprint of a
 codebase that was cloned and configured but never seriously developed at the consensus
 layer.
 
-** 1b. The mining loop uses the wrong hash function.**
+** <i class="fa fa-thumbs-down" aria-hidden="true"></i>. The mining loop uses the wrong hash function.**
 `GenerateBlock` in `rpc/mining.cpp` calls `block.GetHash()` (SHA256d) to
 find a valid proof-of-work nonce, while `AcceptBlock` validates with
 `block.GetPoWHash()` (yescrypt, Qogecoin's actual PoW algorithm). These are
 completely different functions. The mining loop produces a nonce that
-satisfies SHA256d but fails yescrypt validation on every block. This bug would
+satisfies SHA256d but fails yescrypt validation on every block. This serious bug would
 be discovered in the first minute of any serious regtest session.
 
 ** 1c. DarkGravityWave ignores `fPowNoRetargeting`.**
