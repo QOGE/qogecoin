@@ -2,6 +2,7 @@
 ## A Technical and Strategic Assessment of Qogecoin's Post-Quantum Position
 
 **Document status:** SIP-C v2.0 | SAOGEN SAO | SAOGEN AGS 
+
 **Date:** 14 October 2026
 
 ---
