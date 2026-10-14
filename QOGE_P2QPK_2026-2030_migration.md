@@ -1,7 +1,7 @@
 # Why Migration to the P2QPK-HNDL defence Soft Fork by 2030 Is Not Optional
 ## A Technical and Strategic Assessment of Qogecoin's Post-Quantum Position
 
-**Document status:** SIP-C v2.0 | SAOGEN SAO | SAOGEN AGS
+**Document status:** SIP-C v2.0 | SAOGEN SAO | SAOGEN AGS 
 **Date:** 14 October 2026
 
 ---
