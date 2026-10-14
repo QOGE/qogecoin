@@ -1,4 +1,8 @@
-
+<p align="center">
+  <a href="https://qoge.org/" target="_blank">
+    <img alt="QOGE Logo" width="100" src="https://github.com/QOGE/qogecoin/blob/9ba07abb17ed2f364ee72c6816cf364b04d17b8c/files/qoge100.png">
+  </a>
+</p>
 # AGS Migration Announcement
 
 **Effective October 13, 2026**, P2QPK Qogecoin development is transitioning from traditional open-source development to **Autonomously Generated Source (AGS)**.
