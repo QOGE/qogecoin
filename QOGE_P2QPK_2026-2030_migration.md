@@ -19,7 +19,7 @@ implementation of post-quantum cryptography was ever built.
 
 The evidence is specific and technical, not a matter of interpretation:
 
-** 1a. No regtest implementation exists.**
+** <i class="fa fa-thumbs-down" aria-hidden="true"></i>. No regtest implementation exists.**
 `CRegTestParams` — the chain parameters class for Qogecoin's isolated local
 development and testing network — was never added to `chainparams.cpp`. The
 function that selects chain parameters (`CreateChainParams`) has its error deliberately 
@@ -30,7 +30,7 @@ functional. This is not a small gap — it is the fingerprint of a
 codebase that was cloned and configured but never seriously developed at the consensus
 layer.
 
-** <i class="fa fa-thumbs-down" aria-hidden="true"></i>. The mining loop uses the wrong hash function.**
+**  The mining loop uses the wrong hash function.**
 `GenerateBlock` in `rpc/mining.cpp` calls `block.GetHash()` (SHA256d) to
 find a valid proof-of-work nonce, while `AcceptBlock` validates with
 `block.GetPoWHash()` (yescrypt, Qogecoin's actual PoW algorithm). These are
