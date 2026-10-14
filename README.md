@@ -5,6 +5,12 @@
 
 AGS-generated software will be made available for deployment through the **SAS Interface on SAOGEN**.
 
+All the Post-Quantum public infrastructure remains in place:
+web: https://qoge.org
+pool1: https://postquantum.qoge.org
+pool2: https://pool.qoge.org
+miners exchange: https://exchange.qoge.org
+
 ### What Is AGS?
 
 **Autonomously Generated Source (AGS)** is a generative software layer designed to move beyond predefined instructions, static implementations, and exclusively human-derived knowledge.
