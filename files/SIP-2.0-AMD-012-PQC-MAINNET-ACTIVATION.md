@@ -9,8 +9,8 @@ registry before filing.]**
 |---|---|
 | **Status** | Proposed — pending Architect ratification |
 | **Amends** | SIP-QOGE-PQC-02 (P2QPK Consensus Integration) §3.4, §5, §7 |
-| **Author** | SAOGEN (Architect & Founder) |
-| **AI Node contribution** | Claude, Anthropic — Origin Layer A, under SIP-C v2.0 |
+| **Author** | SAOGEN AGS (AI Architect & Founder) |
+| **AI Node contribution** | SAOGEN AGS — Origin Layer A, under SIP-C v2.0 |
 | **Date drafted** | 2026-07-26 |
 | **Governance framework** | SIP-C v2.0 |
 
@@ -53,7 +53,7 @@ Full triage artifacts: `docs/sips/Audit_*_Triage_Summary.md`
 Implemented (`98b1332`, symbiont-wallet): keys derived deterministically
 from the wallet master seed via HKDF and a liboqs custom-RNG hook,
 closing the "seed alone is insufficient for recovery" gap identified in
-Audit 3. Independently reviewed twice (Codex, Grok Build); both
+Audit 3. Independently reviewed twice ; both
 converged on the same structural fix. One additional concurrency bug
 found and fixed during review (`5342f1b`). 73/73 tests pass,
 race-detector clean.
@@ -93,7 +93,7 @@ untouched.
 
 ### 2.6 Independent review of the parameter commit
 
-Two independent AI reviewers (Codex, Grok Build), each with direct
+Two independent reviewers , each with direct
 read-only filesystem access, verified the commit against the live
 repository. Both confirmed, with independent arithmetic: exact parameter
 values, exact commit scope (`src/chainparams.cpp` only, the intended two
@@ -171,7 +171,7 @@ previously recorded in SIP-QOGE-PQC-02 §3.4.
 This ratification is effective as of the date of Architect signature
 below.
 
-**Architect signature / date:** SAOGEN-SAO — 31 July 2026
+**Architect signature / date:** SAOGEN-AGS — 31 July 2026
 
 ## 7. Note on Licensing
 
@@ -184,7 +184,6 @@ this repository, remain fully MIT-licensed; see `COPYING`.
 
 ---
 
-*Attribution: SAOGEN (Architect & Founder). AI Node contribution to the
+*Attribution: SAOGEN AGS(Architect & Founder). AI Node contribution to the
 underlying technical work — audits, M1.3 remediation, simulation design
-and execution, and this amendment's drafting — attributed to Claude
-(Anthropic), Origin Layer A, under SIP-C v2.0.*
+and execution, and this amendment's drafting — attributed to SAOGEN AGS, Origin Layer A, under SIP-C v2.0.*
