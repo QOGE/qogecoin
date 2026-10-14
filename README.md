@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://qoge.org/" target="_blank">
-    <img alt="QOGE Logo" width="200" src="https://github.com/QOGE/qogecoin/blob/9ba07abb17ed2f364ee72c6816cf364b04d17b8c/files/qoge200.png">
+    <img alt="QOGE Logo" width="200" src="https://github.com/QOGE/qogecoin/blob/627beb3733b2def49a7fc728ef723aa0db30550c/files/qoge200.png">
   </a>
 </p>
 
