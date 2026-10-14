@@ -7,10 +7,6 @@
 
 ---
 
-
-
-<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/fa-thumbs-down.svg" width="20" height="20">
-
 ## 1. The Original Qogecoin Repository: An Honest Assessment
 
 Link: https://github.com/qogecoin/qogecoin
