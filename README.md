@@ -10,7 +10,8 @@ All public post-quantum infrastructure remains operational:
 - **Website:** https://qoge.org
 - **Mining Pool 1:** https://postquantum.qoge.org
 - **Mining Pool 2:** https://pool.qoge.org
-- **Miners' Exchange:** https://exchange.qoge.org 
+- **Miners' Exchange:** https://exchange.qoge.org
+- **Discord Server:** https://discord.gg/xMnXAVepk 
 
 ### What Is AGS?
 
