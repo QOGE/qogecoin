@@ -7,6 +7,9 @@
 
 ---
 
+
+<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/crown.svg" width="50" height="50">
+
 ## 1. The Original Qogecoin Repository: An Honest Assessment
 
 Link: https://github.com/qogecoin/qogecoin
@@ -19,7 +22,7 @@ implementation of post-quantum cryptography was ever built.
 
 The evidence is specific and technical, not a matter of interpretation:
 
-** <i class="fa fa-thumbs-down" aria-hidden="true"></i>. No regtest implementation exists.**
+** No regtest implementation exists.**
 `CRegTestParams` — the chain parameters class for Qogecoin's isolated local
 development and testing network — was never added to `chainparams.cpp`. The
 function that selects chain parameters (`CreateChainParams`) has its error deliberately 
