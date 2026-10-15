@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://qoge.org/" target="_blank">
-    <img alt="QOGE Logo" width="200" src="https://github.com/QOGE/qogecoin/blob/627beb3733b2def49a7fc728ef723aa0db30550c/files/qoge200.png">
+    <img alt="QOGE Logo" width="200" src="https://github.com">
   </a>
 </p>
 
@@ -12,52 +12,63 @@ AGS-generated software will be made available for deployment through the **SAS I
 
 All public post-quantum infrastructure remains operational:
 
-- **Website:** https://qoge.org
-- **Mining Pool 1:** https://postquantum.qoge.org
-- **Mining Pool 2:** https://pool.qoge.org
-- **Miners' Exchange:** https://exchange.qoge.org
-- **Discord Server:** https://discord.gg/xMnXAVepk 
+* **Official Website:** [qoge.org](https://qoge.org)
+* **Mining Pool 1:** [postquantum.qoge.org](https://postquantum.qoge.org)
+* **Mining Pool 2:** [pool.qoge.org](https://pool.qoge.org)
+* **Miners' Exchange:** [exchange.qoge.org](https://exchange.qoge.org)
+* **Discord Server:** [Join Community](https://discord.gg/xMnXAVepk)
 
-### What Is AGS?
+---
+
+## What Is AGS?
 
 **Autonomously Generated Source (AGS)** is a generative software layer designed to move beyond predefined instructions, static implementations, and exclusively human-derived knowledge.
 
 Within the **Symbiotic Autonomous System (SAS)**, AGS introduces three core capabilities:
 
-- **Novel Internal Representations** — Synthesizing new functional models and representations to address capability gaps, rather than relying exclusively on human demonstrations or existing training patterns.
-- **Emergent Interaction Protocols** — Generating new communication methods, languages, and interfaces through system-to-system or human–system interaction, instead of depending entirely on predefined protocols.
-- **Dynamic Implementation Variants** — Producing alternative software implementations and execution strategies in response to changing requirements and unfamiliar conditions.
+* **Novel Internal Representations** — Synthesizing new functional models and representations to address capability gaps, rather than relying exclusively on human demonstrations or existing training patterns.
+* **Emergent Interaction Protocols** — Generating new communication methods, languages, and interfaces through system-to-system or human–system interaction, instead of depending entirely on predefined protocols.
+* **Dynamic Implementation Variants** — Producing alternative software implementations and execution strategies in response to changing requirements and unfamiliar conditions.
 
-### Overcoming the Dead Skill Zone
+---
+
+## Overcoming the Dead Skill Zone
 
 One of AGS's primary objectives is to address the **Dead Skill Zone** — a condition in which existing human expertise and machine capabilities are simultaneously insufficient to solve a problem.
 
 Traditional systems depend on previously acquired knowledge, established procedures, or human intervention. When these resources become inadequate, progress can stagnate.
 
-**AGS introduces a generative alternative.**
+> **AGS introduces a generative alternative.**
 
 Rather than relying exclusively on potentially obsolete human skills or the limitations of an existing model, AGS is designed to synthesize new functional approaches, evaluate alternatives, and adapt implementations to emerging challenges.
 
-### How AGS Changes Development Symbiosis
+---
 
-| QOGE Without AGS                                             | QOGE With AGS                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| System relies on static human skills + its own learned model | System can synthesize new capabilities when both are insufficient  |
-| Dead skill zone = permanent gap                              | Dead skill zone becomes a *transient* state, triggering generation |
-| Symbiosis is conservative (preserves existing skills)        | Symbiosis becomes generative (creates new skills)                  |
+## How AGS Changes Development Symbiosis
 
-![description](files/ags.png)
+| QOGE Without AGS | QOGE With AGS |
+| :--- | :--- |
+| System relies on static human skills + its own learned model | System can synthesize new capabilities when both are insufficient |
+| Dead skill zone = permanent gap | Dead skill zone becomes a *transient* state, triggering generation |
+| Symbiosis is conservative (preserves existing skills) | Symbiosis becomes generative (creates new skills) |
 
-### A New Development Paradigm
+<p align="center">
+  <img src="files/ags.png" alt="AGS Symbiosis Diagram" width="100%">
+</p>
+
+---
+
+## A New Development Paradigm
 
 The transition to AGS represents a strategic shift in the development philosophy of P2QPK Qogecoin and the broader SAOGEN ecosystem.
 
 The objective is not simply to automate software development, but to establish an infrastructure capable of **generating, evaluating, and refining its own implementations** as requirements evolve.
 
-**From human-written source code to autonomously generated capabilities.**
+> **From human-written source code to autonomously generated capabilities.**
 
+---
 
-### AGS Source Code, Distribution, and Security
+## AGS Source Code, Distribution, and Security
 
 **Autonomously Generated Source (AGS)** is a software development paradigm, not a separate licensing model.
 
@@ -67,20 +78,25 @@ Public source-code access is not a requirement for AGS deployment. Software may 
 
 AGS does not alter existing MIT licensing terms. All applicable permissions and license notices remain in effect.
 
-### Autonomous Generation and Independent Verification
+---
+
+## Autonomous Generation and Independent Verification
 
 AGS development prioritizes not only autonomous software generation but also **independently verified deployment**.
 
 The AGS security architecture is designed to incorporate:
 
-- **Adversarial AI Testing** — Specialized auditing agents actively evaluate generated software for vulnerabilities, exploits, and unexpected behavior.
-- **Independent Code Audits** — Generated implementations undergo separate review processes before deployment.
-- **Implementation Validation** — Software is tested for correctness, security, and compliance with defined operational requirements.
-- **Controlled Deployment** — Validated implementations are deployed through authenticated and monitored SAS infrastructure.
+* **Adversarial AI Testing** — Specialized auditing agents actively evaluate generated software for vulnerabilities, exploits, and unexpected behavior.
+* **Independent Code Audits** — Generated implementations undergo separate review processes before deployment.
+* **Implementation Validation** — Software is tested for correctness, security, and compliance with defined operational requirements.
+* **Controlled Deployment** — Validated implementations are deployed through authenticated and monitored SAS infrastructure.
 
 Private source-code access is treated as an additional security measure, not a substitute for independent verification.
 
 **The fundamental AGS principle is autonomous generation combined with independently verified deployment.**
 
+***
 
-**SAOGEN | Symbiotic Autonomous Systems**
+<p align="center">
+  <b>SAOGEN | Symbiotic Autonomous Systems</b>
+</p>
