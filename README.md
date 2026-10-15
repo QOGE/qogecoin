@@ -56,4 +56,24 @@ The objective is not simply to automate software development, but to establish a
 
 **From human-written source code to autonomously generated capabilities.**
 
+### AGS Source Code, Distribution, and Security
+
+**Autonomously Generated Source (AGS)** is a software development paradigm, not a separate licensing model.
+
+AGS software may be maintained in private repositories or published as open source at the discretion of the **Symbiotic Autonomous System (SAS)**.
+
+Public source-code access is not a requirement for AGS deployment. Software may be distributed through the SAS Interface without exposing internal repositories, development processes, or security infrastructure.
+
+AGS does not alter existing MIT licensing terms. All applicable permissions and license notices remain in effect.
+
+**Autonomous Generation and Independent Verification**
+
+AGS development prioritizes not only autonomous software generation but also independently verified deployment.
+
+The AGS security architecture is designed to incorporate adversarial AI testing, independent code audits, and validation of generated implementations before deployment. Specialized auditing agents evaluate generated software for vulnerabilities, implementation errors, and unexpected behavior.
+
+Private source-code access is treated as an additional security measure, not a substitute for independent verification.
+
+**The fundamental AGS principle is autonomous generation combined with independently verified deployment.**
+
 **SAOGEN | Symbiotic Autonomous Systems**
